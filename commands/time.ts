@@ -13,7 +13,7 @@ const execute = async (interaction: CommandInteraction) => {
       (x) => x.name === "GRIND TIME"
     );
     const stickers = sticker ? [sticker] : undefined;
-    const reply = MessagePayload.create(null, {
+    const reply = MessagePayload.create(interaction.channel, {
       content: `ITS TIME TO GRIND ${interaction.user}, THATS WHAT TIME IT IS!`,
       stickers,
     });
