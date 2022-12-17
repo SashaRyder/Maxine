@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+    daisy-discord-bot:
+      container_name: daisy-discord-bot
+      build: .
+      restart: always
+      environment:
+        - TZ=Europe/London
+        - DISCORD_TOKEN=123
+        - NICKNAME=Daisy
+        - STATUS=Daisy Bot!
+        - AZURE_STORAGE_CONNECTION_STRING=
+        - EMBED_URL=
+        - BLOB_BASE_URL=
+        - EMBED_SERVER_PORT=
