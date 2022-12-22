@@ -12,4 +12,4 @@ services:
         - AZURE_STORAGE_CONNECTION_STRING=
         - EMBED_URL=
         - BLOB_BASE_URL=
-        - EMBED_SERVER_PORT=
+        - EMBED_SERVER_PORT=12345

@@ -62,7 +62,7 @@ const execute = async (interaction: CommandInteraction) => {
     const url = interaction.options.get("url");
     const attachment = interaction.options.get("attachment");
   
-    const link = url?.value as string || attachment?.value as string;
+    const link = url?.value as string || attachment?.attachment?.url as string;
 
     const fileExt = link.split(".").slice(-1)[0];
     const tmpFileName = tmp.tmpNameSync({ dir: "/tmp", prefix: `${NICKNAME}-img`, postfix: `.${fileExt}` });

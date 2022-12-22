@@ -1,17 +1,22 @@
-import { BlobServiceClient } from "@azure/storage-blob";
+import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
 
 const { AZURE_STORAGE_CONNECTION_STRING, EMBED_URL } = process.env;
 
-const blobServiceClient = BlobServiceClient.fromConnectionString(
-    AZURE_STORAGE_CONNECTION_STRING
-);
+let containerClient: ContainerClient = null;
 
-const containerName = "media"
-const containerClient = blobServiceClient.getContainerClient(containerName);
-containerClient.createIfNotExists({ access: "container" });
-
-
+if(AZURE_STORAGE_CONNECTION_STRING) {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(
+        AZURE_STORAGE_CONNECTION_STRING
+    );
+    
+    const containerName = "media"
+    containerClient = blobServiceClient.getContainerClient(containerName);
+    containerClient.createIfNotExists({ access: "container" });
+}
 const uploadFile = async (filePath: string) => {
+    if(!containerClient) {
+        throw "Azure Storage Not Configured.";
+    }
     const fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
     const blockBlobClient = containerClient.getBlockBlobClient(fileName);
     await blockBlobClient.uploadFile(filePath);
