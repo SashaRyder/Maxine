@@ -4,8 +4,8 @@ import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.j
 import { getColorFromURL } from "color-thief-node";
 
 const execute = async (interaction: CommandInteraction) => {
-    const user = interaction.options.get("user").user || interaction.user;
-    const avatar = user.displayAvatarURL({size: 2048});
+    const user = interaction.options.get("user")?.user || interaction.user;
+    const avatar = user.displayAvatarURL({size: 2048 }).replace(".webp?", ".png?"); //Ensures we don't replace gifs
     const color = await getColorFromURL(avatar);
     const avatarEmbed = new EmbedBuilder()
         .setColor(color)
