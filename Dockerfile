@@ -1,40 +1,33 @@
-FROM ubuntu:22.04
-
-ENV NICKNAME=daisy
-ENV YOUTUBE_DL_SKIP_DOWNLOAD true
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PATH="/usr/bin/python2:/usr/bin/python:${PATH}"
-
-WORKDIR /usr/src/app
-COPY ./package.json ./yarn.lock ./
+FROM debian:bullseye-slim as deps
 
 RUN apt-get update \
-    && apt-get install curl libnss3-dev wget python2 handbrake-cli gnupg xz-utils -y \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install nodejs \
-    && npm install -g yarn \
-    && ln -s /usr/bin/python2 /usr/bin/python \
-    && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install google-chrome-stable -y --no-install-recommends \
-    && yarn install
-    
+    && apt-get install wget xz-utils -y \
+    && wget -q https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -P /deps \
+    && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz | tar -xJ \
+    && wget -qO- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar -xz \
+    && mv geckodriver /deps \
+    && mv ffmpeg-master-latest-linux64-gpl/bin/ff* /deps \
+    && chmod +x -R /deps
+
+FROM node:18.3.0-bullseye-slim as build
+
+ENV YOUTUBE_DL_SKIP_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+
+WORKDIR /app
 COPY . .
+RUN apt-get update && apt-get install python -y && yarn install && yarn build && yarn install --production
 
-RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp && \
-    chmod +x yt-dlp && \
-    wget https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz && \
-    tar -xf ffmpeg-master-latest-linux64-gpl.tar.xz && \
-    mv ffmpeg-master-latest-linux64-gpl/bin/ff* /usr/bin && \
-    rm -rf ffmpeg-master-latest-linux64-gpl && \
-    chmod +x /usr/bin/ff* && \
-    mv yt-dlp /usr/bin && \
-    rm -rf /usr/src/app/build && \
-    yarn build && \
-    yarn install --production
+FROM node:18.3.0-bullseye-slim as final
 
-WORKDIR /usr/src/app/build
+ENV NICKNAME=daisy
 
+RUN apt-get update && apt-get install handbrake-cli firefox-esr python -y --no-install-recommends && apt-get clean
+
+COPY --from=deps /deps/* /usr/bin/
+COPY --from=build /app/build /app/build
+COPY --from=build /app/node_modules /app/node_modules
+
+WORKDIR /app/build
 
 CMD [ "node", "app.js" ]

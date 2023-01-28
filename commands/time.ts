@@ -1,5 +1,6 @@
 import { CommandInterface } from "./CommandInterface";
-import puppeteer from "puppeteer";
+import { Builder, Browser, By, Key, until } from "selenium-webdriver";
+import firefox from "selenium-webdriver/firefox";
 import {
   SlashCommandBuilder,
   CommandInteraction,
@@ -20,37 +21,36 @@ const execute = async (interaction: CommandInteraction) => {
     interaction.reply(reply);
     return;
   }
-  const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/google-chrome",
-    args: ["--no-sandbox"],
-    env: { LANGUAGE: "en_GB" },
-  });
-  const page = await browser.newPage();
-  await page.goto(
-    `https://www.google.com/search?q=time+${location}&aqs=chrome.0.69i59l2.771j0j1&sourceid=chrome&ie=UTF-8&lr=lang_en`
-  );
-  const data = await page.evaluate(() => {
+
+  await interaction.deferReply();
+
+  let options = new firefox.Options()
+  .addArguments("--headless");
+
+  let driver = await new Builder().forBrowser(Browser.FIREFOX).setFirefoxOptions(options).build();
+  await driver.get(`https://www.google.com/search?q=time+${location}&aqs=chrome.0.69i59l2.771j0j1&sourceid=chrome&ie=UTF-8&lr=lang_en`)
+  const data: string[] = await driver.executeScript(`
     let elements = Array.from(document.querySelectorAll("div[role='heading']"));
     let timeElement = elements.find((el) => el.innerHTML.includes(":"));
     let dateElement = timeElement.nextElementSibling.textContent;
     let location =
       timeElement.nextElementSibling.nextElementSibling.textContent;
     return [timeElement.textContent, dateElement, location];
-  });
+  `);
   if (!data.some((data) => data === undefined)) {
     if (!data[2].includes("Time in")) {
-      interaction.reply(`I'm not sure where ${location} is!`);
+      interaction.editReply(`I'm not sure where ${location} is!`);
     }
     const resp = `${data[2]} is ${data[0]} ${data[1]}`
       .replace(/\s+/g, " ")
       .trim();
-    interaction.reply(resp);
+    interaction.editReply(resp);
   } else {
-    interaction.reply(
+    interaction.editReply(
       `Something went wrong. I have the following: \r\n\r\n ${data}`
     );
   }
-  browser.close();
+  driver.close();
 };
 
 module.exports = {
