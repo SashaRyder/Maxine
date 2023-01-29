@@ -6,8 +6,8 @@ import { AttachmentBuilder, CommandInteraction, SlashCommandBuilder } from "disc
 const { NICKNAME } = process.env;
 
 const cropImage = (jimpImage: Jimp, cb: (jimp: Jimp) => void): void => {
-    var w = jimpImage.bitmap.width;
-    var h = jimpImage.bitmap.height;
+    const w = jimpImage.bitmap.width;
+    const h = jimpImage.bitmap.height;
     const leftStart = findLeftSide(jimpImage, w, h);
     const rightStart = findRightSide(jimpImage, w, h);
     const topStart = findTopSide(jimpImage, w, h);
@@ -19,7 +19,7 @@ const cropImage = (jimpImage: Jimp, cb: (jimp: Jimp) => void): void => {
 
 const findLeftSide = (scope: Jimp, w: number, h: number): number => {
     for (let x = 0; x < w; x++) {
-        var clr = scope.getPixelColor(x, h / 2);
+        const clr = scope.getPixelColor(x, h / 2);
 
         if (clr !== 255) {
             return x;
@@ -29,7 +29,7 @@ const findLeftSide = (scope: Jimp, w: number, h: number): number => {
 
 const findRightSide = (scope: Jimp, w: number, h: number): number => {
     for (let x = w; x > 0; x--) {
-        var clr = scope.getPixelColor(x, h / 2);
+        const clr = scope.getPixelColor(x, h / 2);
 
         if (clr !== 255) {
             return x;
@@ -39,7 +39,7 @@ const findRightSide = (scope: Jimp, w: number, h: number): number => {
 
 const findTopSide = (scope: Jimp, w: number, h: number): number => {
     for (let y = 0; y < h; y++) {
-        var clr = scope.getPixelColor(w / 2, y);
+        const clr = scope.getPixelColor(w / 2, y);
 
         if (clr !== 255) {
             return y;
@@ -49,7 +49,7 @@ const findTopSide = (scope: Jimp, w: number, h: number): number => {
 
 const findBottomSide = (scope: Jimp, w: number, h: number): number => {
     for (let y = h; y > 0; y--) {
-        var clr = scope.getPixelColor(w / 2, y);
+        const clr = scope.getPixelColor(w / 2, y);
 
         if (clr !== 255) {
             return y;

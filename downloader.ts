@@ -27,7 +27,7 @@ export const downloadVideo = async (url: string, showWarnings: boolean, isClip: 
             .filter((x) => x !== "");
         const isMerger = RegExp("Merging formats into").exec(process.stdout);
         const ext = extArr.length > 0 && !isMerger ? extArr[0] : "mp4";
-        let filePath = `${randomFileName}.${ext}`;
+        const filePath = `${randomFileName}.${ext}`;
         if (!fs.existsSync(filePath)) {
             const possibleError = RegExp("File is larger than max-filesize").exec(
                 process.stdout
