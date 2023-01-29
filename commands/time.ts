@@ -24,10 +24,10 @@ const execute = async (interaction: CommandInteraction) => {
 
   await interaction.deferReply();
 
-  let options = new firefox.Options()
+  const options = new firefox.Options()
   .addArguments("--headless");
 
-  let driver = await new Builder().forBrowser(Browser.FIREFOX).setFirefoxOptions(options).build();
+  const driver = await new Builder().forBrowser(Browser.FIREFOX).setFirefoxOptions(options).build();
   await driver.get(`https://www.google.com/search?q=time+${location}&aqs=chrome.0.69i59l2.771j0j1&sourceid=chrome&ie=UTF-8&lr=lang_en`)
   const data: string[] = await driver.executeScript(`
     let elements = Array.from(document.querySelectorAll("div[role='heading']"));
