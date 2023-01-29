@@ -1,5 +1,5 @@
 import { CommandInterface } from "./CommandInterface";
-import { Builder, Browser, By, Key, until } from "selenium-webdriver";
+import { Builder, Browser } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
 import {
   SlashCommandBuilder,

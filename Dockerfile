@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim as deps
 
 RUN apt-get update \
-    && apt-get install wget xz-utils -y \
+    && apt-get install wget xz-utils -y --no-install-recommends \
     && wget -q https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -P /deps \
     && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz | tar -xJ \
     && wget -qO- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar -xz \
@@ -16,13 +16,13 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /app
 COPY . .
-RUN apt-get update && apt-get install python -y && yarn install && yarn build && yarn install --production
+RUN apt-get update && apt-get install python -y --no-install-recommends && yarn install && yarn build && yarn install --production
 
 FROM node:18.3.0-bullseye-slim as final
 
 ENV NICKNAME=daisy
 
-RUN apt-get update && apt-get install handbrake-cli firefox-esr python -y --no-install-recommends && apt-get clean
+RUN apt-get update && apt-get install handbrake-cli firefox-esr python -y --no-install-recommends && apt-get clean  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps /deps/* /usr/bin/
 COPY --from=build /app/build /app/build

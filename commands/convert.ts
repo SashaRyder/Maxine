@@ -1,4 +1,4 @@
-import fs, { link } from "fs";
+import fs from "fs";
 import * as hbjs from "handbrake-js";
 import { downloadVideo } from "../downloader";
 import tmp from "tmp";

@@ -1,4 +1,3 @@
-import _ from "underscore";
 import { CommandInterface } from "./CommandInterface";
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getColorFromURL } from "color-thief-node";
