@@ -13,7 +13,7 @@ export const downloadVideo = async (url: string, showWarnings: boolean, isClip: 
     if (!showWarnings) {
         cmd += " --no-warnings";
     }
-    cmd += " --user-agent facebookexternalhit/1.1 -f 'bv*[ext=mp4][vcodec=h264]+ba[ext=m4a]/b[ext=mp4][vcodec=h264]/bv[vcodec=h264]+ba/bv+ba/b' --merge-output-format mp4";
+    cmd += " --user-agent facebookexternalhit/1.1 --no-check-certificate -f 'bv*[ext=mp4][vcodec=h264]+ba[ext=m4a]/b[ext=mp4][vcodec=h264]/bv[vcodec=h264]+ba/bv+ba/b' --merge-output-format mp4";
     if (!isClip) {
         cmd += " --max-filesize 100m";
     }
