@@ -27,7 +27,7 @@ FROM node:18.3.0-bullseye-slim as final
 ENV NICKNAME=daisy
 
 RUN apt-get update \
-    && apt-get install handbrake-cli firefox-esr python -y --no-install-recommends \
+    && apt-get install handbrake-cli firefox-esr python3 python-is-python3 -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
