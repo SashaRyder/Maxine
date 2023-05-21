@@ -12,24 +12,30 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
     interaction.member.nickname || interaction.user.username;
   if (currName.endsWith(afkAppend)) {
     await interaction.member.setNickname(currName.replace(afkAppend, ""));
-    await interaction.reply({
+    const reply = await interaction.reply({
       content: `You are no longer AFK`,
       ephemeral: true,
+      fetchReply: true
     });
+    setTimeout(() => reply.delete(), 3000);
     return;
   }
   try {
     await interaction.member.setNickname(`${currName} ${afkAppend}`);
-    await interaction.reply({
+    const reply = await interaction.reply({
       content: `You have now been set to AFK`,
       ephemeral: true,
+      fetchReply: true
     });
+    setTimeout(() => reply.delete(), 3000);
   } catch (error) {
     if (error.code === RESTJSONErrorCodes.MissingPermissions) {
-      await interaction.reply({
+      const reply = await interaction.reply({
         content: `Unfortunately the bot does not have the permission to change your nickname, this is most likely due to you being the server owner!`,
         ephemeral: true,
+        fetchReply: true
       });
+      setTimeout(() => reply.delete(), 10000);
     }
     console.log(error);
   }
