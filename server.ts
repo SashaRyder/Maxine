@@ -2,8 +2,8 @@ import express from "express";
 
 const { NICKNAME, BLOB_BASE_URL, EMBED_SERVER_PORT } = process.env;
 
-const httpBaseUrl = BLOB_BASE_URL.replace("https://", "http://");
-const httpsBaseUrl = BLOB_BASE_URL.replace("http://", "https://");
+const httpBaseUrl = BLOB_BASE_URL ? BLOB_BASE_URL.replace("https://", "http://") : "";
+const httpsBaseUrl = BLOB_BASE_URL ? BLOB_BASE_URL.replace("http://", "https://") : "";
 
 
 const template: string = 
