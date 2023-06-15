@@ -5,7 +5,7 @@ import { clientReady, guildCreate } from "./functions";
 import fs from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
 
-const { DISCORD_TOKEN } = process.env;
+const { DISCORD_TOKEN, BLOB_BASE_URL } = process.env;
 
 global["appRoot"] = path.resolve(__dirname);
 
@@ -84,4 +84,4 @@ client.on("error", (err) => {
 });
 
 client.login(DISCORD_TOKEN);
-startServer();
+if(BLOB_BASE_URL) { startServer(); }
