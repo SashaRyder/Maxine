@@ -3,7 +3,7 @@ FROM debian:bullseye-slim as deps
 RUN apt-get update \
     && apt-get install wget xz-utils ca-certificates -y --no-install-recommends \
     && wget -q https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -P /deps \
-    && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz | tar -xJ \
+    && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2023-08-08-14-11/ffmpeg-N-111719-gb98ee1a355-linux64-gpl.tar.xz | tar -xJ \
     && wget -qO- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar -xz \
     && mv geckodriver /deps \
     && mv ffmpeg-master-latest-linux64-gpl/bin/ff* /deps \
