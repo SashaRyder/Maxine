@@ -6,7 +6,7 @@ RUN apt-get update \
     && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2023-08-08-14-11/ffmpeg-N-111719-gb98ee1a355-linux64-gpl.tar.xz | tar -xJ \
     && wget -qO- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar -xz \
     && mv geckodriver /deps \
-    && mv ffmpeg-master-latest-linux64-gpl/bin/ff* /deps \
+    && mv ffmpeg*/bin/ff* /deps \
     && chmod +x -R /deps
 
 FROM node:18.3.0-bullseye-slim as build
