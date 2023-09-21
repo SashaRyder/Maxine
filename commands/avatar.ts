@@ -3,6 +3,7 @@ import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.j
 import { getColorFromURL } from "color-thief-node";
 
 const execute = async (interaction: CommandInteraction) => {
+    await interaction.deferReply();
     const user = interaction.options.get("user")?.user || interaction.user;
     const avatar = user.displayAvatarURL({size: 2048 }).replace(".webp?", ".png?"); //Ensures we don't replace gifs
     const color = await getColorFromURL(avatar);
@@ -11,7 +12,7 @@ const execute = async (interaction: CommandInteraction) => {
         .setTitle(`Avatar for ${user.username}`)
         .setImage(avatar)
         .setTimestamp(new Date())
-    interaction.reply({embeds: [avatarEmbed]});
+    interaction.followUp({embeds: [avatarEmbed]});
 };
 
 module.exports = {
