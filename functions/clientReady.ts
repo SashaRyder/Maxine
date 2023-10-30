@@ -5,7 +5,7 @@ const { NICKNAME, STATUS } = process.env;
 
 export const clientReady = (client: Client) => {
   console.log(
-    `${NICKNAME} is online in ${pluralise(
+    `${NICKNAME} is online in ${client.guilds.cache.size} ${pluralise(
       "guild",
       client.guilds.cache.size !== 1
     )}!`
