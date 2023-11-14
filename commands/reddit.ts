@@ -34,6 +34,7 @@ const execute = async (interaction: CommandInteraction) => {
   );
   console.log("Schedule Write Success");
   startSchedule(client, subreddit, interval, guildId, channelId, true);
+  interaction.reply({ content: "Schedule set!", ephemeral: true });
 };
 
 const startSchedule = (
@@ -47,19 +48,51 @@ const startSchedule = (
   const generatePost = async () => {
     const url = template.replace("{0}", subreddit);
     const { data } = await axios.get(url);
-    const post = _.sample(data.data.children).data;
-    const embed = new EmbedBuilder()
-      .setAuthor({name: post.author, url: `https://reddit.com/u/${post.author}`})
+    //TODO: Sort out gallery embeds.
+    const post = _.sample(
+      data.data.children.filter(
+        (post: { data: { domain: string } }) =>
+          post.data.domain !== "reddit.com"
+      )
+    ).data;
+    let postContentUrl: string = post.url;
+    let contentUrl = "";
+    let embed = new EmbedBuilder()
+      .setAuthor({
+        name: post.author,
+        url: `https://reddit.com/u/${post.author}`,
+      })
       .setColor("#FF5700")
       .setTitle(post.title)
-      .setTimestamp(new Date())
-      .setImage(post.url)
-      .setURL(`https://reddit.com${post.permalink}`);
+      .setTimestamp(new Date());
+    if (post.domain === "redgifs.com") {
+      // const tag = postContentUrl.substring(postContentUrl.lastIndexOf("/") + 1);
+      // const thumbUrl: string = post.media.oembed.thumbnail_url;
+      // const casedTag = thumbUrl.substring(
+      //   thumbUrl.lastIndexOf("/") + 1,
+      //   thumbUrl.lastIndexOf("/") + tag.length + 1
+      // );
+      // const apiUrl = `https://api.redgifs.com/v2/gifs/${tag}/files/${casedTag}.mp4`;
+      // embed = embed.setImage().setURL(`https://reddit.com${post.permalink}`);
+      contentUrl = postContentUrl;
+    } else if (post.domain === "i.redd.it") {
+      embed = embed
+        .setImage(postContentUrl)
+        .setURL(`https://reddit.com${post.permalink}`);
+    } else if (post.domain === "reddit.com") {
+      // embed = embed.setURL(postContentUrl);
+      // contentUrl = postContentUrl;
+    }
+
     const channelToSend = client.guilds.cache
       .find((guild) => guild.id === guildId)
       .channels.cache.find((channel) => channel.id === channelId);
     if (channelToSend && channelToSend.isTextBased()) {
-      channelToSend.send({ embeds: [embed] });
+      if (contentUrl) {
+        channelToSend.send(contentUrl);
+      } else {
+        channelToSend.send({ embeds: [embed] });
+      }
     }
   };
   setInterval(generatePost, interval * 60 * 60 * 1000);
@@ -84,7 +117,8 @@ module.exports = {
         .setDescription("Hours between poll")
         .setRequired(true)
     ),
-  execute
-} as CommandInterface
+  execute,
+  startSchedule,
+} as CommandInterface & { startSchedule: typeof startSchedule };
 
 export { startSchedule };
