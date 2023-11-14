@@ -2,8 +2,9 @@ import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
 import { startServer } from "./server";
 import { clientReady, guildCreate } from "./functions";
-import fs from "fs";
+import fs, { existsSync } from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
+import { startSchedule } from "./commands/reddit";
 
 const { DISCORD_TOKEN, BLOB_BASE_URL } = process.env;
 
@@ -84,4 +85,26 @@ client.on("error", (err) => {
 });
 
 client.login(DISCORD_TOKEN);
-if(BLOB_BASE_URL) { startServer(); }
+if (BLOB_BASE_URL) {
+  startServer();
+}
+
+if (!existsSync("/data/schedule.json")) {
+  fs.writeFileSync("/data/schedule.json", "[]");
+}
+const schedule = fs.readFileSync("/data/schedule.json", { encoding: "utf8" });
+const json: {
+  subreddit: string;
+  interval: number;
+  guildId: string;
+  channelId: string;
+}[] = JSON.parse(schedule);
+json.forEach((task) => {
+  startSchedule(
+    client,
+    task.subreddit,
+    task.interval,
+    task.guildId,
+    task.channelId
+  );
+});

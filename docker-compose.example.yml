@@ -4,6 +4,8 @@ services:
       container_name: daisy-discord-bot
       build: .
       restart: always
+      volumes:
+        - "./data:/data"
       environment:
         - TZ=Europe/London
         - DISCORD_TOKEN=123

@@ -35,6 +35,8 @@ COPY --from=deps /deps/* /usr/bin/
 COPY --from=build /app/build /app/build
 COPY --from=build /app/node_modules /app/node_modules
 
+VOLUME [ "/data" ]
+
 WORKDIR /app/build
 
 CMD [ "node", "app.js" ]
