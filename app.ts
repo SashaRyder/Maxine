@@ -76,7 +76,7 @@ client.on("ready", async () => {
       task.guildId,
       task.channelId,
       task.posted,
-      true
+      false
     );
   });
 
