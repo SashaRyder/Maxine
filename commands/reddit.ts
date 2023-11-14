@@ -73,6 +73,10 @@ const startSchedule = (
       contentUrl = postContentUrl;
     }
 
+    if (contentUrl.startsWith("https://i.")) {
+      contentUrl = contentUrl.replace("https://i.", "https://");
+    }
+
     const channelToSend = client.guilds.cache
       .find((guild) => guild.id === guildId)
       .channels.cache.find((channel) => channel.id === channelId);
