@@ -33,7 +33,7 @@ const execute = async (interaction: CommandInteraction) => {
     JSON.stringify(scheduleFile, null, 4)
   );
   console.log("Schedule Write Success");
-  startSchedule(client, subreddit, interval, guildId, channelId, true);
+  startSchedule(client, subreddit, interval, guildId, channelId, [], true);
   interaction.reply({ content: "Schedule set!", ephemeral: true });
 };
 
@@ -43,18 +43,21 @@ const startSchedule = (
   interval: number,
   guildId: string,
   channelId: string,
+  posted: string[],
   postNow?: boolean
 ) => {
   const generatePost = async () => {
     const url = template.replace("{0}", subreddit);
     const { data } = await axios.get(url);
     //TODO: Sort out gallery embeds.
-    const post = _.sample(
-      data.data.children.filter(
-        (post: { data: { domain: string } }) =>
-          post.data.domain !== "reddit.com"
-      )
-    ).data;
+    const items = data.data.children.filter(
+      (post: { data: { domain: string; id: string } }) =>
+        post.data.domain !== "reddit.com" && !posted.includes(post.data.id)
+    );
+    if(items.length === 0) {
+      return;
+    } 
+    const post = _.sample(items).data;
     let postContentUrl: string = post.url;
     let contentUrl = "";
     let embed = new EmbedBuilder()
@@ -87,6 +90,25 @@ const startSchedule = (
         channelToSend.send({ embeds: [embed] });
       }
     }
+    const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
+    let scheduleFile: {
+      subreddit: string;
+      interval: number;
+      guildId: string;
+      channelId: string;
+      posted: string[];
+    }[] = JSON.parse(file);
+    let thisSchedule = scheduleFile.findIndex(
+      (task) => task.channelId === channelId
+    );
+    scheduleFile[thisSchedule].posted = [
+      ...scheduleFile[thisSchedule].posted,
+      post.id,
+    ];
+    await fs.writeFile(
+      "/data/schedule.json",
+      JSON.stringify(scheduleFile, null, 4)
+    );
   };
   setInterval(generatePost, interval * 60 * 60 * 1000);
   if (postNow) {

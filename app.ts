@@ -98,6 +98,7 @@ const json: {
   interval: number;
   guildId: string;
   channelId: string;
+  posted: string[]
 }[] = JSON.parse(schedule);
 json.forEach((task) => {
   startSchedule(
@@ -105,6 +106,7 @@ json.forEach((task) => {
     task.subreddit,
     task.interval,
     task.guildId,
-    task.channelId
+    task.channelId,
+    task.posted
   );
 });
