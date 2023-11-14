@@ -107,6 +107,7 @@ json.forEach((task) => {
     task.interval,
     task.guildId,
     task.channelId,
-    task.posted
+    task.posted,
+    true
   );
 });

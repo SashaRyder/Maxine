@@ -102,7 +102,7 @@ const startSchedule = (
       (task) => task.channelId === channelId
     );
     scheduleFile[thisSchedule].posted = [
-      ...scheduleFile[thisSchedule].posted,
+      ...(scheduleFile[thisSchedule].posted || []),
       post.id,
     ];
     await fs.writeFile(
