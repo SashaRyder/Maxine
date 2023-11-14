@@ -58,7 +58,7 @@ const startSchedule = (
       return;
     } 
     const post = _.sample(items).data;
-    let postContentUrl: string = post.url;
+    const postContentUrl: string = post.url;
     let contentUrl = "";
     let embed = new EmbedBuilder()
       .setAuthor({
@@ -91,14 +91,14 @@ const startSchedule = (
       }
     }
     const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-    let scheduleFile: {
+    const scheduleFile: {
       subreddit: string;
       interval: number;
       guildId: string;
       channelId: string;
       posted: string[];
     }[] = JSON.parse(file);
-    let thisSchedule = scheduleFile.findIndex(
+    const thisSchedule = scheduleFile.findIndex(
       (task) => task.channelId === channelId
     );
     scheduleFile[thisSchedule].posted = [
