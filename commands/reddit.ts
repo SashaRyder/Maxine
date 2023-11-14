@@ -51,8 +51,8 @@ const startSchedule = (
     const { data } = await axios.get(url);
     //TODO: Sort out gallery embeds.
     const items = data.data.children.filter(
-      (post: { data: { domain: string; id: string } }) =>
-        post.data.domain !== "reddit.com" && !posted?.includes(post.data.id)
+      (post: { data: { domain: string; id: string; thumbnail_height: number } }) =>
+        post.data.domain !== "reddit.com" && !posted?.includes(post.data.id) && post.data.thumbnail_height !== null
     );
     if(items.length === 0) {
       return;
