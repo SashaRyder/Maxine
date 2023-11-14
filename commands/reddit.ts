@@ -55,7 +55,7 @@ const startSchedule = (
           post.data.domain !== "reddit.com"
       )
     ).data;
-    let postContentUrl: string = post.url;
+    const postContentUrl: string = post.url;
     let contentUrl = "";
     let embed = new EmbedBuilder()
       .setAuthor({
