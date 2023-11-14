@@ -56,6 +56,30 @@ client.on("ready", async () => {
     // And of course, make sure you catch and log any errors!
     console.error(error);
   }
+
+  if (!existsSync("/data/schedule.json")) {
+    fs.writeFileSync("/data/schedule.json", "[]");
+  }
+  const schedule = fs.readFileSync("/data/schedule.json", { encoding: "utf8" });
+  const json: {
+    subreddit: string;
+    interval: number;
+    guildId: string;
+    channelId: string;
+    posted: string[]
+  }[] = JSON.parse(schedule);
+  json.forEach((task) => {
+    startSchedule(
+      client,
+      task.subreddit,
+      task.interval,
+      task.guildId,
+      task.channelId,
+      task.posted,
+      true
+    );
+  });
+
 });
 
 client.on("guildCreate", (guild) => guildCreate(guild, client));
@@ -88,26 +112,3 @@ client.login(DISCORD_TOKEN);
 if (BLOB_BASE_URL) {
   startServer();
 }
-
-if (!existsSync("/data/schedule.json")) {
-  fs.writeFileSync("/data/schedule.json", "[]");
-}
-const schedule = fs.readFileSync("/data/schedule.json", { encoding: "utf8" });
-const json: {
-  subreddit: string;
-  interval: number;
-  guildId: string;
-  channelId: string;
-  posted: string[]
-}[] = JSON.parse(schedule);
-json.forEach((task) => {
-  startSchedule(
-    client,
-    task.subreddit,
-    task.interval,
-    task.guildId,
-    task.channelId,
-    task.posted,
-    true
-  );
-});
