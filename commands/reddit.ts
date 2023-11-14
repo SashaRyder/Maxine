@@ -52,7 +52,7 @@ const startSchedule = (
     //TODO: Sort out gallery embeds.
     const items = data.data.children.filter(
       (post: { data: { domain: string; id: string } }) =>
-        post.data.domain !== "reddit.com" && !posted.includes(post.data.id)
+        post.data.domain !== "reddit.com" && !posted?.includes(post.data.id)
     );
     if(items.length === 0) {
       return;
