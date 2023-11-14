@@ -65,23 +65,12 @@ const startSchedule = (
       .setColor("#FF5700")
       .setTitle(post.title)
       .setTimestamp(new Date());
-    if (post.domain === "redgifs.com") {
-      // const tag = postContentUrl.substring(postContentUrl.lastIndexOf("/") + 1);
-      // const thumbUrl: string = post.media.oembed.thumbnail_url;
-      // const casedTag = thumbUrl.substring(
-      //   thumbUrl.lastIndexOf("/") + 1,
-      //   thumbUrl.lastIndexOf("/") + tag.length + 1
-      // );
-      // const apiUrl = `https://api.redgifs.com/v2/gifs/${tag}/files/${casedTag}.mp4`;
-      // embed = embed.setImage().setURL(`https://reddit.com${post.permalink}`);
-      contentUrl = postContentUrl;
-    } else if (post.domain === "i.redd.it") {
+    if (post.domain === "i.redd.it") {
       embed = embed
         .setImage(postContentUrl)
         .setURL(`https://reddit.com${post.permalink}`);
-    } else if (post.domain === "reddit.com") {
-      // embed = embed.setURL(postContentUrl);
-      // contentUrl = postContentUrl;
+    } else {
+      contentUrl = postContentUrl;
     }
 
     const channelToSend = client.guilds.cache
