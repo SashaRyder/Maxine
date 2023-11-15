@@ -63,7 +63,7 @@ client.on("ready", async () => {
     fs.writeFileSync("/data/schedule.json", "[]");
   }
   if (cron.getTasks().size === 0) {
-    cron.schedule("*/30 * * * *", () => {
+    cron.schedule("*/30 * * * *", async () => {
       const startPostTimes = 12 
       const endPostTimes = 23
       const timeNow = moment().hour();
@@ -72,7 +72,7 @@ client.on("ready", async () => {
       const schedule = fs.readFileSync("/data/schedule.json", {
         encoding: "utf8",
       });
-      const json: {
+      const tasks: {
         subreddit: string;
         interval: number;
         guildId: string;
@@ -80,8 +80,8 @@ client.on("ready", async () => {
         posted: string[];
         lastRan: Date;
       }[] = JSON.parse(schedule);
-      json.forEach((task) => {
-        submitPost(
+      for(const task of tasks) {
+        await submitPost(
           client,
           task.subreddit,
           task.interval,
@@ -90,7 +90,7 @@ client.on("ready", async () => {
           task.posted,
           task.lastRan
         );
-      });
+      }
       console.info("CRON Ended...");
     });
   }

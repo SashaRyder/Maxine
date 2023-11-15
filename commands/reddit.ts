@@ -67,9 +67,9 @@ const submitPost = async (
     .channels.cache.find((channel) => channel.id === channelId);
   if (channelToSend && channelToSend.isTextBased()) {
     if (embed) {
-      channelToSend.send({ embeds: [embed] });
+      await channelToSend.send({ embeds: [embed] });
     } else {
-      channelToSend.send(post.url);
+      await channelToSend.send(post.url);
     }
   }
   const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
