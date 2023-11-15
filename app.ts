@@ -4,7 +4,8 @@ import { startServer } from "./server";
 import { clientReady, guildCreate } from "./functions";
 import fs, { existsSync } from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
-import { startSchedule } from "./commands/reddit";
+import { submitPost } from "./commands/reddit";
+import cron from "node-cron";
 
 const { DISCORD_TOKEN, BLOB_BASE_URL } = process.env;
 
@@ -60,26 +61,31 @@ client.on("ready", async () => {
   if (!existsSync("/data/schedule.json")) {
     fs.writeFileSync("/data/schedule.json", "[]");
   }
-  const schedule = fs.readFileSync("/data/schedule.json", { encoding: "utf8" });
-  const json: {
-    subreddit: string;
-    interval: number;
-    guildId: string;
-    channelId: string;
-    posted: string[]
-  }[] = JSON.parse(schedule);
-  json.forEach((task) => {
-    startSchedule(
-      client,
-      task.subreddit,
-      task.interval,
-      task.guildId,
-      task.channelId,
-      task.posted,
-      false
-    );
-  });
 
+  cron.schedule("*/30 * * * *", () => {
+    console.info("CRON Starting...");
+    const schedule = fs.readFileSync("/data/schedule.json", { encoding: "utf8" });
+    const json: {
+      subreddit: string;
+      interval: number;
+      guildId: string;
+      channelId: string;
+      posted: string[];
+      lastRan: Date
+    }[] = JSON.parse(schedule);
+    json.forEach((task) => {
+      submitPost(
+        client,
+        task.subreddit,
+        task.interval,
+        task.guildId,
+        task.channelId,
+        task.posted,
+        task.lastRan
+      );
+    });
+    console.info("CRON Ended...");
+  });
 });
 
 client.on("guildCreate", (guild) => guildCreate(guild, client));

@@ -5,18 +5,16 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import axios from "axios";
 import _ from "underscore";
 import fs from "fs/promises";
-
-const template = `https://www.reddit.com/r/{0}/hot/.json`;
+import moment from "moment";
+import { getRedditPost } from "../getRedditPost";
 
 const execute = async (interaction: CommandInteraction) => {
   const subreddit = interaction.options.get("subreddit").value as string;
   const interval = interaction.options.get("interval").value as number;
   const guildId = interaction.guildId;
   const channelId = interaction.channelId;
-  const client = interaction.client;
   const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
   let scheduleFile = JSON.parse(file);
   scheduleFile = [
@@ -33,87 +31,68 @@ const execute = async (interaction: CommandInteraction) => {
     JSON.stringify(scheduleFile, null, 4)
   );
   console.log("Schedule Write Success");
-  startSchedule(client, subreddit, interval, guildId, channelId, [], true);
   interaction.reply({ content: "Schedule set!", ephemeral: true });
 };
 
-const startSchedule = (
+const submitPost = async (
   client: Client,
   subreddit: string,
   interval: number,
   guildId: string,
   channelId: string,
   posted: string[],
-  postNow?: boolean
+  lastRan: Date,
 ) => {
-  const generatePost = async () => {
-    const url = template.replace("{0}", subreddit);
-    const { data } = await axios.get(url);
-    //TODO: Sort out gallery embeds.
-    const items = data.data.children.filter(
-      (post: { data: { domain: string; id: string; thumbnail_height: number } }) =>
-        post.data.domain !== "reddit.com" && !posted?.includes(post.data.id) && post.data.thumbnail_height !== null
-    );
-    if(items.length === 0) {
-      return;
-    } 
-    const post = _.sample(items).data;
-    let postContentUrl: string = post.url;
-    let contentUrl = "";
-    let embed = new EmbedBuilder()
+  const lastRanMoment = moment(lastRan);
+  if(lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
+    return;
+  }
+  console.log(lastRanMoment.add(interval, "hours").toString());
+  const post = await getRedditPost(subreddit, posted);
+  let embed: EmbedBuilder = null;
+  if (post.domain === "i.redd.it") {
+    embed = new EmbedBuilder()
       .setAuthor({
         name: post.author,
-        url: `https://reddit.com/u/${post.author}`,
+        url: post.authorUrl,
       })
       .setColor("#FF5700")
       .setTitle(post.title)
-      .setTimestamp(new Date());
-    if (post.domain === "i.redd.it") {
-      embed = embed
-        .setImage(postContentUrl)
-        .setURL(`https://reddit.com${post.permalink}`);
-    } else {
-      contentUrl = postContentUrl;
-    }
-
-    if (contentUrl.startsWith("https://i.")) {
-      contentUrl = contentUrl.replace("https://i.", "https://");
-    }
-
-    const channelToSend = client.guilds.cache
-      .find((guild) => guild.id === guildId)
-      .channels.cache.find((channel) => channel.id === channelId);
-    if (channelToSend && channelToSend.isTextBased()) {
-      if (contentUrl) {
-        channelToSend.send(contentUrl);
-      } else {
-        channelToSend.send({ embeds: [embed] });
-      }
-    }
-    const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-    let scheduleFile: {
-      subreddit: string;
-      interval: number;
-      guildId: string;
-      channelId: string;
-      posted: string[];
-    }[] = JSON.parse(file);
-    let thisSchedule = scheduleFile.findIndex(
-      (task) => task.channelId === channelId
-    );
-    scheduleFile[thisSchedule].posted = [
-      ...(scheduleFile[thisSchedule].posted || []),
-      post.id,
-    ];
-    await fs.writeFile(
-      "/data/schedule.json",
-      JSON.stringify(scheduleFile, null, 4)
-    );
-  };
-  setInterval(generatePost, interval * 60 * 60 * 1000);
-  if (postNow) {
-    generatePost();
+      .setTimestamp(new Date())
+      .setImage(post.url)
+      .setURL(post.permalink);
   }
+  const channelToSend = client.guilds.cache
+    .find((guild) => guild.id === guildId)
+    .channels.cache.find((channel) => channel.id === channelId);
+  if (channelToSend && channelToSend.isTextBased()) {
+    if (embed) {
+      channelToSend.send({ embeds: [embed] });
+    } else {
+      channelToSend.send(post.url);
+    }
+  }
+  const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
+  let scheduleFile: {
+    subreddit: string;
+    interval: number;
+    guildId: string;
+    channelId: string;
+    posted: string[];
+    lastRan: Date;
+  }[] = JSON.parse(file);
+  let thisSchedule = scheduleFile.findIndex(
+    (task) => task.channelId === channelId && task.subreddit === subreddit
+  );
+  scheduleFile[thisSchedule].posted = [
+    ...(scheduleFile[thisSchedule].posted || []),
+    post.id,
+  ];
+  scheduleFile[thisSchedule].lastRan = new Date();
+  await fs.writeFile(
+    "/data/schedule.json",
+    JSON.stringify(scheduleFile, null, 4)
+  );
 };
 
 module.exports = {
@@ -133,7 +112,7 @@ module.exports = {
         .setRequired(true)
     ),
   execute,
-  startSchedule,
-} as CommandInterface & { startSchedule: typeof startSchedule };
+  submitPost,
+} as CommandInterface & { submitPost: typeof submitPost };
 
-export { startSchedule };
+export { submitPost };
