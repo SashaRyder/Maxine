@@ -16,7 +16,8 @@ export const clientReady = (client: Client) => {
       .setNickname(NICKNAME)
   );
   if (STATUS) {
-    client.user.setActivity(STATUS, {
+    const renderedStatus = STATUS.replaceAll("{guildsCount}", client.guilds.cache.size.toString());
+    client.user.setActivity(renderedStatus, {
       type: ActivityType.Playing,
     });
   }
