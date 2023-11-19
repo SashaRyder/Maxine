@@ -1,14 +1,14 @@
 import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
-import { startServer } from "./server";
 import { clientReady, guildCreate } from "./functions";
 import fs, { existsSync } from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
 import { submitPost } from "./commands/reddit";
 import cron from "node-cron";
 import moment from "moment";
+import { startInspector } from "./inspector";
 
-const { DISCORD_TOKEN, BLOB_BASE_URL } = process.env;
+const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
 global["appRoot"] = path.resolve(__dirname);
 
@@ -39,6 +39,9 @@ for (const file of commandFiles) {
 
 client.on("ready", async () => {
   clientReady(client);
+  if (ENABLE_INSPECTOR === "true") {
+    startInspector(client);
+  }
   // Construct and prepare an instance of the REST module
   const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
   try {
@@ -64,10 +67,10 @@ client.on("ready", async () => {
   }
   if (cron.getTasks().size === 0) {
     cron.schedule("*/30 * * * *", async () => {
-      const startPostTimes = 12 
-      const endPostTimes = 23
+      const startPostTimes = 12;
+      const endPostTimes = 23;
       const timeNow = moment().hour();
-      if(timeNow < startPostTimes || timeNow > endPostTimes) return;
+      if (timeNow < startPostTimes || timeNow > endPostTimes) return;
       console.info("CRON Starting...");
       const schedule = fs.readFileSync("/data/schedule.json", {
         encoding: "utf8",
@@ -80,7 +83,7 @@ client.on("ready", async () => {
         posted: string[];
         lastRan: Date;
       }[] = JSON.parse(schedule);
-      for(const task of tasks) {
+      for (const task of tasks) {
         await submitPost(
           client,
           task.subreddit,
@@ -123,6 +126,3 @@ client.on("error", (err) => {
 });
 
 client.login(DISCORD_TOKEN);
-if (BLOB_BASE_URL) {
-  startServer();
-}

@@ -15,10 +15,10 @@ ENV YOUTUBE_DL_SKIP_DOWNLOAD true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /app
-COPY . .
 RUN apt-get update \
-    && apt-get install python -y --no-install-recommends\
-    && yarn install\
+    && apt-get install python -y --no-install-recommends
+COPY . .
+RUN yarn install\
     && yarn build\
     && yarn install --production
 
