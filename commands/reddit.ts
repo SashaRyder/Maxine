@@ -24,6 +24,8 @@ const execute = async (interaction: CommandInteraction) => {
       interval,
       guildId,
       channelId,
+      posted: [],
+      lastRan: moment().subtract("1", "day")
     },
   ];
   await fs.writeFile(
@@ -47,8 +49,8 @@ const submitPost = async (
   if(lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
     return;
   }
-  console.log(lastRanMoment.add(interval, "hours").toString());
   const post = await getRedditPost(subreddit, posted);
+  if(!post) return;
   let embed: EmbedBuilder = null;
   if (post.domain === "i.redd.it") {
     embed = new EmbedBuilder()

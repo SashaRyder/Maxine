@@ -117,4 +117,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 docker-compose.yml
-data/schedule.json
+**/schedule.json
