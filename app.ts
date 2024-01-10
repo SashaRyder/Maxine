@@ -102,7 +102,7 @@ client.on("ready", async () => {
 client.on("guildCreate", (guild) => guildCreate(guild, client));
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
   if (!command) {

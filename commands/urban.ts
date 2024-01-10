@@ -1,15 +1,18 @@
-import * as ud from "urban-dictionary";
 import * as Discord from "discord.js";
 import { CommandInterface } from "./CommandInterface";
 import { SlashCommandBuilder } from "discord.js";
+import axios from "axios";
+
+interface urbanListItem { definition: string; word: string }
+interface urbanResponse { list: urbanListItem[] };
 
 export const execute = async (interaction: Discord.CommandInteraction) => {
-    
+
   const toUrban = interaction.options.get("query").value as string;
-  let resultsToUse = [];
+  let resultsToUse: urbanListItem[] = [];
   try {
-    const results = await ud.define(toUrban);
-    resultsToUse = results;
+    const results = await axios.get<urbanResponse>(`https://api.urbandictionary.com/v0/define?term=${toUrban}`);
+    resultsToUse = results.data.list;
   } catch (error) {
     /** Error occurred! **/
   }

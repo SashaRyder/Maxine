@@ -1,6 +1,6 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, ContextMenuCommandBuilder, SlashCommandBuilder } from "discord.js";
 
 export interface CommandInterface {
-    data: SlashCommandBuilder;
+    data: SlashCommandBuilder | ContextMenuCommandBuilder;
     execute: (interaction: CommandInteraction) => Promise<void>;
 }
