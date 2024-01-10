@@ -4,7 +4,7 @@ import { SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 
 interface urbanListItem { definition: string; word: string }
-interface urbanResponse { list: urbanListItem[] };
+interface urbanResponse { list: urbanListItem[] }
 
 export const execute = async (interaction: Discord.CommandInteraction) => {
 
