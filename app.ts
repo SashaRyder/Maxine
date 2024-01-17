@@ -78,7 +78,7 @@ client.on("ready", async () => {
         encoding: "utf8",
       });
       const tasks: Task[] = JSON.parse(schedule);
-      var groups = _.groupBy(tasks, x => x.channelId);
+      const groups = _.groupBy(tasks, x => x.channelId);
       for (const channel of Object.keys(groups)) {
         const grp = groups[channel];
         await submitPostsForChannel(
