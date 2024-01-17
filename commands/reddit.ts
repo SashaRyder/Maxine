@@ -4,11 +4,13 @@ import {
   CommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
+  TextChannel,
 } from "discord.js";
 import _ from "underscore";
 import fs from "fs/promises";
 import moment from "moment";
 import { getRedditPost } from "../getRedditPost";
+import { Task } from "../task";
 
 const execute = async (interaction: CommandInteraction) => {
   const subreddit = interaction.options.get("subreddit").value as string;
@@ -36,21 +38,33 @@ const execute = async (interaction: CommandInteraction) => {
   interaction.reply({ content: "Schedule set!", ephemeral: true });
 };
 
-const submitPost = async (
+const submitPostsForChannel = async (
   client: Client,
-  subreddit: string,
-  interval: number,
-  guildId: string,
-  channelId: string,
-  posted: string[],
-  lastRan: Date,
+  group: Task[]
 ) => {
+  const { guildId, channelId } = group[0];
+  const postsPromise = group.map(generatePost);
+  const posts = await Promise.all(postsPromise);
+
+  const embeds = posts.filter((post) => post instanceof EmbedBuilder) as EmbedBuilder[];
+  const urls = posts.filter((post) => typeof post === "string") as string[];
+
+  const channel = client.guilds.cache
+    .find((guild) => guild.id === guildId)
+    .channels.cache.find((channel) => channel.id === channelId) as TextChannel;
+
+  await channel.send({ content: urls.join("\r\n"), embeds: embeds });
+
+};
+
+const generatePost = async (task: Task): Promise<string | EmbedBuilder> => {
+  const { channelId, interval, lastRan, posted, subreddit } = task;
   const lastRanMoment = moment(lastRan);
-  if(lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
+  if (lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
     return;
   }
   const post = await getRedditPost(subreddit, posted);
-  if(!post) return;
+  if (!post) return;
   let embed: EmbedBuilder = null;
   if (post.domain === "i.redd.it") {
     embed = new EmbedBuilder()
@@ -64,25 +78,8 @@ const submitPost = async (
       .setImage(post.url)
       .setURL(post.permalink);
   }
-  const channelToSend = client.guilds.cache
-    .find((guild) => guild.id === guildId)
-    .channels.cache.find((channel) => channel.id === channelId);
-  if (channelToSend && channelToSend.isTextBased()) {
-    if (embed) {
-      await channelToSend.send({ embeds: [embed] });
-    } else {
-      await channelToSend.send(post.url);
-    }
-  }
   const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-  let scheduleFile: {
-    subreddit: string;
-    interval: number;
-    guildId: string;
-    channelId: string;
-    posted: string[];
-    lastRan: Date;
-  }[] = JSON.parse(file);
+  let scheduleFile: Task[] = JSON.parse(file);
   let thisSchedule = scheduleFile.findIndex(
     (task) => task.channelId === channelId && task.subreddit === subreddit
   );
@@ -95,7 +92,8 @@ const submitPost = async (
     "/data/schedule.json",
     JSON.stringify(scheduleFile, null, 4)
   );
-};
+  return embed ?? post.url;
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -114,7 +112,7 @@ module.exports = {
         .setRequired(true)
     ),
   execute,
-  submitPost,
-} as CommandInterface & { submitPost: typeof submitPost };
+  submitPostsForChannel,
+} as CommandInterface & { submitPostsForChannel: typeof submitPostsForChannel };
 
-export { submitPost };
+export { submitPostsForChannel };

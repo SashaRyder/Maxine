@@ -3,10 +3,12 @@ import path from "path";
 import { clientReady, guildCreate } from "./functions";
 import fs, { existsSync } from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
-import { submitPost } from "./commands/reddit";
+import { submitPostsForChannel } from "./commands/reddit";
 import cron from "node-cron";
 import moment from "moment";
 import { startInspector } from "./inspector";
+import _ from "underscore";
+import { Task } from "./task";
 
 const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
@@ -75,23 +77,13 @@ client.on("ready", async () => {
       const schedule = fs.readFileSync("/data/schedule.json", {
         encoding: "utf8",
       });
-      const tasks: {
-        subreddit: string;
-        interval: number;
-        guildId: string;
-        channelId: string;
-        posted: string[];
-        lastRan: Date;
-      }[] = JSON.parse(schedule);
-      for (const task of tasks) {
-        await submitPost(
+      const tasks: Task[] = JSON.parse(schedule);
+      var groups = _.groupBy(tasks, x => x.channelId);
+      for (const channel of Object.keys(groups)) {
+        const grp = groups[channel];
+        await submitPostsForChannel(
           client,
-          task.subreddit,
-          task.interval,
-          task.guildId,
-          task.channelId,
-          task.posted,
-          task.lastRan
+          grp
         );
       }
       console.info("CRON Ended...");
