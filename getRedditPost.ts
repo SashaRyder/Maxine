@@ -10,6 +10,7 @@ interface Post {
     url: string;
     author: string;
     title: string;
+    permalink: string;
   }
 }
 
