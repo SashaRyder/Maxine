@@ -79,8 +79,8 @@ const generatePost = async (task: Task): Promise<string | EmbedBuilder> => {
       .setURL(post.permalink);
   }
   const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-  let scheduleFile: Task[] = JSON.parse(file);
-  let thisSchedule = scheduleFile.findIndex(
+  const scheduleFile: Task[] = JSON.parse(file);
+  const thisSchedule = scheduleFile.findIndex(
     (task) => task.channelId === channelId && task.subreddit === subreddit
   );
   scheduleFile[thisSchedule].posted = [
