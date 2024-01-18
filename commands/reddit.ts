@@ -53,7 +53,10 @@ const submitPostsForChannel = async (
     .find((guild) => guild.id === guildId)
     .channels.cache.find((channel) => channel.id === channelId) as TextChannel;
 
-  await channel.send({ content: urls.join("\r\n"), embeds: embeds });
+  await channel.send({ embeds });
+  for (const url of urls) {
+    await channel.send(url); //make integration work properly
+  }
 
 };
 
