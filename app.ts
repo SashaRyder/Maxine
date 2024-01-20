@@ -86,9 +86,9 @@ client.on("ready", async () => {
     fs.unlinkSync("/data/schedule.json");
   }
   if (cron.getTasks().size === 0) {
-    cron.schedule("*/1 * * * *", async () => {
+    cron.schedule("*/30 * * * *", async () => {
       const startPostTimes = 12;
-      const endPostTimes = 24;
+      const endPostTimes = 23;
       const timeNow = moment().hour();
       if (timeNow < startPostTimes || timeNow > endPostTimes) return;
       console.info("CRON Starting...");
