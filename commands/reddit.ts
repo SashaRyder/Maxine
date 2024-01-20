@@ -7,40 +7,31 @@ import {
   TextChannel,
 } from "discord.js";
 import _ from "underscore";
-import fs from "fs/promises";
 import moment from "moment";
 import { getRedditPost } from "../getRedditPost";
-import { Task } from "../task";
+import { Reddit, Sequelize as SequelizeModel } from "../models";
+import { Sequelize } from "sequelize";
 
 const execute = async (interaction: CommandInteraction) => {
+  const sequelize = new Sequelize(SequelizeModel.configuration);
+  const reddit = Reddit.init(Reddit.configuration, { sequelize });
+  
   const subreddit = interaction.options.get("subreddit").value as string;
   const interval = interaction.options.get("interval").value as number;
   const guildId = interaction.guildId;
   const channelId = interaction.channelId;
-  const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-  let scheduleFile = JSON.parse(file);
-  scheduleFile = [
-    ...scheduleFile,
-    {
-      subreddit,
-      interval,
-      guildId,
-      channelId,
-      posted: [],
-      lastRan: moment().subtract("1", "day")
-    },
-  ];
-  await fs.writeFile(
-    "/data/schedule.json",
-    JSON.stringify(scheduleFile, null, 4)
-  );
+  await reddit.create({
+    subreddit, interval, guildId, channelId, 
+    posted: JSON.stringify([]), lastRan: moment().seconds(0).milliseconds(0).toDate()
+  });
   console.log("Schedule Write Success");
   interaction.reply({ content: "Schedule set!", ephemeral: true });
 };
 
 const submitPostsForChannel = async (
   client: Client,
-  group: Task[]
+  group: Reddit[],
+  reddit: typeof Reddit
 ) => {
   const { guildId, channelId } = group[0];
   const postsPromise = group.map(generatePost);
@@ -60,13 +51,14 @@ const submitPostsForChannel = async (
 
 };
 
-const generatePost = async (task: Task): Promise<string | EmbedBuilder> => {
-  const { channelId, interval, lastRan, posted, subreddit } = task;
+const generatePost = async (task: Reddit): Promise<string | EmbedBuilder> => {
+  const { interval, lastRan, posted, subreddit } = task;
+  const postedArr = JSON.parse(posted) as string[];
   const lastRanMoment = moment(lastRan);
   if (lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
     return;
   }
-  const post = await getRedditPost(subreddit, posted);
+  const post = await getRedditPost(subreddit, postedArr);
   if (!post) return;
   let embed: EmbedBuilder = null;
   if (post.domain === "i.redd.it") {
@@ -81,20 +73,9 @@ const generatePost = async (task: Task): Promise<string | EmbedBuilder> => {
       .setImage(post.url)
       .setURL(post.permalink);
   }
-  const file = await fs.readFile("/data/schedule.json", { encoding: "utf8" });
-  const scheduleFile: Task[] = JSON.parse(file);
-  const thisSchedule = scheduleFile.findIndex(
-    (task) => task.channelId === channelId && task.subreddit === subreddit
-  );
-  scheduleFile[thisSchedule].posted = [
-    ...(scheduleFile[thisSchedule].posted || []),
-    post.id,
-  ];
-  scheduleFile[thisSchedule].lastRan = new Date();
-  await fs.writeFile(
-    "/data/schedule.json",
-    JSON.stringify(scheduleFile, null, 4)
-  );
+  task.posted = JSON.stringify([...postedArr, post.id]);
+  task.lastRan = moment().seconds(0).milliseconds(0).toDate();
+  await task.save();
   return embed ?? post.url;
 }
 

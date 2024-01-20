@@ -8,7 +8,8 @@ import cron from "node-cron";
 import moment from "moment";
 import { startInspector } from "./inspector";
 import _ from "underscore";
-import { Task } from "./task";
+import { Sequelize } from 'sequelize';
+import { Reddit, Sequelize as SequelizeModel } from "./models";
 
 const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
@@ -64,26 +65,41 @@ client.on("ready", async () => {
     console.error(error);
   }
 
-  if (!existsSync("/data/schedule.json")) {
-    fs.writeFileSync("/data/schedule.json", "[]");
+  const sequelize = new Sequelize(SequelizeModel.configuration);
+  const reddit = Reddit.init(Reddit.configuration, { sequelize });
+  await reddit.sync();
+
+  if (existsSync("/data/schedule.json")) {
+    const file = fs.readFileSync("/data/schedule.json", {encoding: "utf-8"});
+    const tasks: {
+      subreddit: string;
+      interval: number;
+      guildId: string;
+      channelId: string;
+      posted: string[];
+      lastRan: Date;
+    }[] = JSON.parse(file);
+    await reddit.bulkCreate<Reddit>(tasks.map((task) => ({
+      ...task,
+      posted: JSON.stringify(task.posted) }),
+    ));
+    fs.unlinkSync("/data/schedule.json");
   }
   if (cron.getTasks().size === 0) {
-    cron.schedule("*/30 * * * *", async () => {
+    cron.schedule("*/1 * * * *", async () => {
       const startPostTimes = 12;
-      const endPostTimes = 23;
+      const endPostTimes = 24;
       const timeNow = moment().hour();
       if (timeNow < startPostTimes || timeNow > endPostTimes) return;
       console.info("CRON Starting...");
-      const schedule = fs.readFileSync("/data/schedule.json", {
-        encoding: "utf8",
-      });
-      const tasks: Task[] = JSON.parse(schedule);
+      const tasks: Reddit[] = await reddit.findAll();
       const groups = _.groupBy(tasks, x => x.channelId);
       for (const channel of Object.keys(groups)) {
         const grp = groups[channel];
         await submitPostsForChannel(
           client,
-          grp
+          grp,
+          reddit
         );
       }
       console.info("CRON Ended...");
