@@ -15,13 +15,13 @@ import { Sequelize } from "sequelize";
 const execute = async (interaction: CommandInteraction) => {
   const sequelize = new Sequelize(SequelizeModel.configuration);
   const reddit = Reddit.init(Reddit.configuration, { sequelize });
-  
+
   const subreddit = interaction.options.get("subreddit").value as string;
   const interval = interaction.options.get("interval").value as number;
   const guildId = interaction.guildId;
   const channelId = interaction.channelId;
   await reddit.create({
-    subreddit, interval, guildId, channelId, 
+    subreddit, interval, guildId, channelId,
     posted: JSON.stringify([]), lastRan: moment().seconds(0).milliseconds(0).toDate()
   });
   console.log("Schedule Write Success");
@@ -44,7 +44,9 @@ const submitPostsForChannel = async (
     .find((guild) => guild.id === guildId)
     .channels.cache.find((channel) => channel.id === channelId) as TextChannel;
 
-  await channel.send({ embeds });
+  for (const embed of embeds) {
+    await channel.send({ embeds: [embed] }); //Allows deleting of single embeds
+  }
   for (const url of urls) {
     await channel.send(url); //make integration work properly
   }
