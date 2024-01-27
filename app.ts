@@ -1,6 +1,6 @@
 import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
-import { clientReady, guildCreate } from "./functions";
+import { clientReady, guildCreate, guildLeave } from "./functions";
 import fs, { existsSync } from "fs";
 import { CommandInterface } from "./commands/CommandInterface";
 import { submitPostsForChannel } from "./commands/reddit";
@@ -108,6 +108,8 @@ client.on("ready", async () => {
 });
 
 client.on("guildCreate", (guild) => guildCreate(guild, client));
+
+client.on("guildDelete", (guild) => guildLeave(guild, client));
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
