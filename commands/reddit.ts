@@ -3,6 +3,7 @@ import {
   Client,
   CommandInteraction,
   EmbedBuilder,
+  InteractionType,
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
@@ -13,19 +14,43 @@ import { Reddit, Sequelize as SequelizeModel } from "../models";
 import { Sequelize } from "sequelize";
 
 const execute = async (interaction: CommandInteraction) => {
+  if (interaction.type !== InteractionType.ApplicationCommand || !interaction.isChatInputCommand()) {
+    return;
+  }
   const sequelize = new Sequelize(SequelizeModel.configuration);
   const reddit = Reddit.init(Reddit.configuration, { sequelize });
-
-  const subreddit = interaction.options.get("subreddit").value as string;
-  const interval = interaction.options.get("interval").value as number;
-  const guildId = interaction.guildId;
-  const channelId = interaction.channelId;
-  await reddit.create({
-    subreddit, interval, guildId, channelId,
-    posted: JSON.stringify([]), lastRan: moment().seconds(0).milliseconds(0).toDate()
-  });
-  console.log("Schedule Write Success");
-  interaction.reply({ content: "Schedule set!", ephemeral: true });
+  if (interaction.options.getSubcommand() === 'add') {
+    const subreddit = interaction.options.get("subreddit").value as string;
+    const interval = interaction.options.get("interval").value as number;
+    const guildId = interaction.guildId;
+    const channelId = interaction.channelId;
+    await reddit.create({
+      subreddit, interval, guildId, channelId,
+      posted: JSON.stringify([]), lastRan: moment().seconds(0).milliseconds(0).toDate()
+    });
+    console.log("Schedule Write Success");
+    interaction.reply({ content: "Schedule set!", ephemeral: true });
+  }
+  else if (interaction.options.getSubcommand() === 'remove') {
+    const subreddit = interaction.options.get("subreddit").value as string;
+    const guildId = interaction.guildId;
+    const channelId = interaction.channelId;
+    await reddit.destroy({
+      where: {
+        subreddit, channelId, guildId
+      }
+    });
+    console.log("Schedule Delete Success");
+    interaction.reply({ content: "Schedule deleted!", ephemeral: true });
+  }
+  else if (interaction.options.getSubcommand() === 'list') {
+    const guildId = interaction.guildId;
+    const channelId = interaction.channelId;
+    const thisChannel = await reddit.findAll({ where: { channelId, guildId } });
+    const content = "The following subreddits are active in this channel:\r\n" +
+    `${thisChannel.map((reddit) => `/r/${reddit.subreddit} every ${reddit.interval} hour(s)`).join("\r\n")}`;
+    await interaction.reply({ content });
+  }
 };
 
 const submitPostsForChannel = async (
@@ -84,19 +109,41 @@ const generatePost = async (task: Reddit): Promise<string | EmbedBuilder> => {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("reddit")
-    .setDescription("Polls reddit hot and posts a random post periodically")
-    .addStringOption((option) =>
-      option
-        .setName("subreddit")
-        .setDescription("The subreddit to pull from")
-        .setRequired(true)
-    )
-    .addNumberOption((option) =>
-      option
-        .setName("interval")
-        .setDescription("Hours between poll")
-        .setRequired(true)
-    ),
+    .setDescription('Control reddit posts')
+    .addSubcommand(subcommand => (
+      subcommand
+        .setName("add")
+        .setDescription("Adds a subreddit to the auto post schedule")
+        .addStringOption((option) =>
+          option
+            .setName("subreddit")
+            .setDescription("The subreddit to pull from")
+            .setRequired(true)
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("interval")
+            .setDescription("Hours between poll")
+            .setRequired(true)
+        )
+    ))
+    .addSubcommand(subcommand => (
+      subcommand
+        .setName("remove")
+        .setDescription("Removes a subreddit from the auto post schedule")
+        .addStringOption((option) =>
+          option
+            .setName("subreddit")
+            .setDescription("The subreddit to pull from")
+            .setRequired(true)
+        )
+    ))
+    .addSubcommand(subcommand => (
+      subcommand
+        .setName("list")
+        .setDescription("Lists the subreddits and their intervals for the current channel")
+    ))
+  ,
   execute,
   submitPostsForChannel,
 } as CommandInterface & { submitPostsForChannel: typeof submitPostsForChannel };
