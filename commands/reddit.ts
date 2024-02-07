@@ -61,6 +61,7 @@ const execute = async (interaction: CommandInteraction) => {
     await interaction.reply({ content });
   }
   else if (interaction.options.getSubcommand() === 'force') {
+    await interaction.deferReply();
     const guildId = interaction.guildId;
     const tasks: Reddit[] = await reddit.findAll({ where: { guildId } });
     const groups = _.groupBy(tasks, x => x.channelId);
@@ -72,6 +73,7 @@ const execute = async (interaction: CommandInteraction) => {
         true
       );
     }
+    interaction.reply("Force pull complete :)");
   }
 };
 
