@@ -21,9 +21,18 @@ const execute = async (interaction: CommandInteraction) => {
   const reddit = Reddit.init(Reddit.configuration, { sequelize });
   if (interaction.options.getSubcommand() === 'add') {
     const subreddit = interaction.options.get("subreddit").value as string;
+    if(subreddit.includes("/")) {
+      interaction.reply({ content: `${subreddit} is poorly formatted I think, I need the subreddit name only.`, ephemeral: true });
+      return;
+    }
     const interval = interaction.options.get("interval").value as number;
     const guildId = interaction.guildId;
     const channelId = interaction.channelId;
+    const exists = await reddit.findOne({where: { subreddit, guildId, channelId }});
+    if(exists) {
+      interaction.reply({ content: `${subreddit} already exists!`, ephemeral: true });
+      return;
+    }
     await reddit.create({
       subreddit, interval, guildId, channelId,
       posted: JSON.stringify([]), lastRan: moment().seconds(0).milliseconds(0).toDate()
@@ -51,15 +60,28 @@ const execute = async (interaction: CommandInteraction) => {
     `${thisChannel.map((reddit) => `/r/${reddit.subreddit} every ${reddit.interval} hour(s)`).join("\r\n")}`;
     await interaction.reply({ content });
   }
+  else if (interaction.options.getSubcommand() === 'force') {
+    const guildId = interaction.guildId;
+    const tasks: Reddit[] = await reddit.findAll({ where: { guildId } });
+    const groups = _.groupBy(tasks, x => x.channelId);
+    for (const channel of Object.keys(groups)) {
+      const grp = groups[channel];
+      await submitPostsForChannel(
+        interaction.client,
+        grp,
+        true
+      );
+    }
+  }
 };
 
 const submitPostsForChannel = async (
   client: Client,
   group: Reddit[],
-  reddit: typeof Reddit
+  force: boolean = false
 ) => {
   const { guildId, channelId } = group[0];
-  const postsPromise = group.map(generatePost);
+  const postsPromise = group.map((task) => generatePost(task, force));
   const posts = await Promise.all(postsPromise);
 
   const embeds = posts.filter((post) => post instanceof EmbedBuilder) as EmbedBuilder[];
@@ -78,11 +100,11 @@ const submitPostsForChannel = async (
 
 };
 
-const generatePost = async (task: Reddit): Promise<string | EmbedBuilder> => {
+const generatePost = async (task: Reddit, force: boolean): Promise<string | EmbedBuilder> => {
   const { interval, lastRan, posted, subreddit } = task;
   const postedArr = JSON.parse(posted) as string[];
   const lastRanMoment = moment(lastRan);
-  if (lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
+  if (!force && lastRan && lastRanMoment.add(interval, "hours").isAfter(new Date())) {
     return;
   }
   const post = await getRedditPost(subreddit, postedArr);
@@ -142,6 +164,11 @@ module.exports = {
       subcommand
         .setName("list")
         .setDescription("Lists the subreddits and their intervals for the current channel")
+    ))
+    .addSubcommand(subcommand => (
+      subcommand
+        .setName("force")
+        .setDescription("Force push reddit posts to channels")
     ))
   ,
   execute,

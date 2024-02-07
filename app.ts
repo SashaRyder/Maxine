@@ -99,7 +99,7 @@ client.on("ready", async () => {
         await submitPostsForChannel(
           client,
           grp,
-          reddit
+          false
         );
       }
       console.info("CRON Ended...");
