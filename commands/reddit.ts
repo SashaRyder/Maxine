@@ -64,7 +64,7 @@ const execute = async (interaction: CommandInteraction) => {
   }
   else if (interaction.options.getSubcommand() === 'force') {
     await interaction.deferReply();
-    if(!isAdmin(interaction.member as GuildMember, interaction.guild)) {
+    if(!await isAdmin(interaction.member as GuildMember, interaction.guild)) {
       await interaction.reply("You don't have perms to do that...");
       return;
     }
