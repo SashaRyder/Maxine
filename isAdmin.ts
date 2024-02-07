@@ -6,11 +6,6 @@ export const isAdmin = async (user: GuildMember, guild: Guild): Promise<boolean>
     }
     const me = guild.members.me;
     const myHighestPermission = me.roles.highest.position;
-    const guildRoles = guild.roles.cache.filter((role) => role.position <= myHighestPermission);
-    for (var role of guildRoles) {
-        if (user.roles.cache.has(role[0])) {
-            return true;
-        }
-    }
-    return false;
+    const usersHighestPermission = user.roles.highest.position;
+    return usersHighestPermission >= myHighestPermission;
 }

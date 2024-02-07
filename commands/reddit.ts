@@ -65,7 +65,7 @@ const execute = async (interaction: CommandInteraction) => {
   else if (interaction.options.getSubcommand() === 'force') {
     await interaction.deferReply();
     if(!await isAdmin(interaction.member as GuildMember, interaction.guild)) {
-      await interaction.reply("You don't have perms to do that...");
+      await interaction.followUp("You don't have perms to do that...");
       return;
     }
     const guildId = interaction.guildId;
@@ -79,7 +79,7 @@ const execute = async (interaction: CommandInteraction) => {
         true
       );
     }
-    interaction.reply("Force pull complete :)");
+    interaction.followUp({content: "Force pull complete :)", ephemeral: true});
   }
 };
 
