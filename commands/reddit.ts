@@ -3,6 +3,7 @@ import {
   Client,
   CommandInteraction,
   EmbedBuilder,
+  GuildMember,
   InteractionType,
   SlashCommandBuilder,
   TextChannel,
@@ -12,6 +13,7 @@ import moment from "moment";
 import { getRedditPost } from "../getRedditPost";
 import { Reddit, Sequelize as SequelizeModel } from "../models";
 import { Sequelize } from "sequelize";
+import { isAdmin } from "../isAdmin";
 
 const execute = async (interaction: CommandInteraction) => {
   if (interaction.type !== InteractionType.ApplicationCommand || !interaction.isChatInputCommand()) {
@@ -62,6 +64,10 @@ const execute = async (interaction: CommandInteraction) => {
   }
   else if (interaction.options.getSubcommand() === 'force') {
     await interaction.deferReply();
+    if(!isAdmin(interaction.member as GuildMember, interaction.guild)) {
+      await interaction.reply("You don't have perms to do that...");
+      return;
+    }
     const guildId = interaction.guildId;
     const tasks: Reddit[] = await reddit.findAll({ where: { guildId } });
     const groups = _.groupBy(tasks, x => x.channelId);
