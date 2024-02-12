@@ -5,11 +5,11 @@ import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 const execute = async (interaction: CommandInteraction) => {
     const userToRizz = interaction.options.get("user").user;
     await interaction.reply(`Hi ${userToRizz}
-    I am wobot
-    Beep book beep
-    :robot:
-    Beep beep
-    Friends uwu`);
+I am wobot
+Beep book beep
+:robot:
+Beep beep
+Friends uwu`);
 };
 
 module.exports = {
