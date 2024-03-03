@@ -9,10 +9,10 @@ const execute = async (interaction: CommandInteraction) => {
     await interaction.deferReply();
     const url = interaction.options.get("url");
     const attachment = interaction.options.get("attachment");
-    const xTimes = interaction.options.get("xTimes").value as number;
+    const xTimes = interaction.options.get("by_x").value as number;
 
-    if([-1,0,1].includes(xTimes)) {
-        await interaction.followUp({ content: `Invalid parameter "${xTimes}" given for xTimes.`});
+    if ([-1, 0, 1].includes(xTimes)) {
+        await interaction.followUp({ content: `Invalid parameter "${xTimes}" given for xTimes.` });
         return;
     }
 
@@ -21,17 +21,26 @@ const execute = async (interaction: CommandInteraction) => {
     const fileExt = link.split(".").slice(-1)[0];
     const tmpFileName = tmp.tmpNameSync({ dir: "/tmp", prefix: `${NICKNAME}-img`, postfix: `.${fileExt}` });
 
-    const jimpImg = await Jimp.read(link);
+
+    let jimpImg = null;
+
+    try {
+        jimpImg = await Jimp.read(link);
+    }
+    catch (error) {
+        await interaction.followUp(error.message);
+        return;
+    }
 
     const currSize = { width: jimpImg.getWidth(), height: jimpImg.getHeight() };
     const newSize = {
-        width: xTimes > 0 ? currSize.width * xTimes : currSize.width / xTimes,
-        height: xTimes > 0 ? currSize.height * xTimes : currSize.height / xTimes 
+        width: xTimes > 0 ? currSize.width * xTimes : currSize.width / Math.abs(xTimes),
+        height: xTimes > 0 ? currSize.height * xTimes : currSize.height / Math.abs(xTimes)
     };
 
     jimpImg.resize(newSize.width, newSize.height, async (_, jimp) => {
         await jimp.writeAsync(tmpFileName);
-        interaction.followUp({ content: "Here you go ^_^", files: [new AttachmentBuilder(tmpFileName)] });
+        await interaction.followUp({ content: "Here you go ^_^", files: [new AttachmentBuilder(tmpFileName)] });
     });
 }
 
@@ -47,7 +56,7 @@ module.exports = {
                     option.setName("url").setDescription("image URL").setRequired(true)
                 )
                 .addNumberOption((option) =>
-                    option.setName("xTimes")
+                    option.setName("by_x")
                         .setDescription("times to resize, -x or x (-2, 2) for double in size or shrink by half")
                         .setRequired(true)
                 )
@@ -63,7 +72,7 @@ module.exports = {
                         .setRequired(true)
                 )
                 .addNumberOption((option) =>
-                    option.setName("xTimes")
+                    option.setName("by_x")
                         .setDescription("times to resize, -x or x (-2, 2) for double in size or shrink by half")
                         .setRequired(true)
                 )
