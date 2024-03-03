@@ -11,6 +11,11 @@ const execute = async (interaction: CommandInteraction) => {
     const attachment = interaction.options.get("attachment");
     const xTimes = interaction.options.get("xTimes").value as number;
 
+    if([-1,0,1].includes(xTimes)) {
+        await interaction.followUp({ content: `Invalid parameter "${xTimes}" given for xTimes.`});
+        return;
+    }
+
     const link = url?.value as string || attachment?.attachment?.url as string;
 
     const fileExt = link.split(".").slice(-1)[0];
