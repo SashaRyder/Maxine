@@ -8,7 +8,7 @@ updates:
       interval: "weekly"
 
   # Configuration for API
-  - package-ecosystem: "yarn"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
