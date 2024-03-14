@@ -500,10 +500,10 @@
     "@types/connect" "*"
     "@types/node" "*"
 
-"@types/color-thief-node@^1.0.1":
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/@types/color-thief-node/-/color-thief-node-1.0.2.tgz"
-  integrity sha512-LaeL8NFrVUyc4wpppaEMYUMMylbwMbCqhCvj6+q47ZTFazxYW5KsjUQRBHf6TKqYe4dQq/2HTulqiI7VUEF9GA==
+"@types/color-thief-node@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@types/color-thief-node/-/color-thief-node-1.0.4.tgz#33b250895de87ed7090dce44bee2b19a419acbb6"
+  integrity sha512-9mHoSyLAojvDQsZWxu3FHhiwUsQC7Lfuxrii6rnYc11uJ7GH2ODaM82gyDCXnR/5eXqlOymauUXU5eCEYAHS4A==
 
 "@types/connect@*":
   version "3.4.35"
