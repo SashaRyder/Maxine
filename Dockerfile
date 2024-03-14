@@ -9,7 +9,7 @@ RUN apt-get update \
     && mv ffmpeg*/bin/ff* /deps \
     && chmod +x -R /deps
 
-FROM node:18.3.0-bullseye-slim as build
+FROM node:21.7.1-bullseye-slim as build
 
 ENV YOUTUBE_DL_SKIP_DOWNLOAD true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
@@ -22,7 +22,7 @@ RUN yarn install\
     && yarn build\
     && yarn install --production
 
-FROM node:18.3.0-bullseye-slim as final
+FROM node:21.7.1-bullseye-slim as final
 
 ENV NICKNAME=daisy
 
