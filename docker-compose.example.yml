@@ -18,3 +18,4 @@ services:
         - ENABLE_INSPECTOR=false
         - EMBED_SERVER_PORT=12345
         - DEEPL_API_KEY=1234
+        - CHATGPT_API_KEY=1234
