@@ -1,7 +1,7 @@
 import _ from "underscore";
 import { CommandInterface } from "./CommandInterface";
 import { ApplicationCommandType, CacheType, CommandInteraction, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction } from "discord.js";
-import { ChatGPTUnofficialProxyAPI } from 'chatgpt'
+import { ChatGPTAPI } from 'chatgpt'
 
 const execute = async (interaction: CommandInteraction) => {
   if (!interaction.isMessageContextMenuCommand) return;
@@ -12,8 +12,8 @@ const execute = async (interaction: CommandInteraction) => {
   };
 
   const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
-  const api = new ChatGPTUnofficialProxyAPI({
-    accessToken: authKey
+  const api = new ChatGPTAPI({
+    apiKey: authKey
   });
 
   const result = await api.sendMessage(`TLDR the following: ${msg}`);
