@@ -16,13 +16,13 @@ const execute = async (interaction: CommandInteraction) => {
   const api = chatGPT();
 
   if(!api) {
-    interaction.reply("Chat GPT API key not provided.");
+    interaction.followUp("Chat GPT API key not provided.");
     return;
   }
 
   const msg = interaction.options.get("query").value;
   const result = await api.sendMessage(msg as string);
-  await interaction.reply(result.text);
+  await interaction.followUp(result.text);
 };
 
 export { data, execute };

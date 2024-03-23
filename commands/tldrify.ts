@@ -11,14 +11,14 @@ const execute = async (interaction: CommandInteraction) => {
   const api = chatGPT();
 
   if(!api) {
-    interaction.reply("Chat GPT API key not provided.");
+    interaction.followUp("Chat GPT API key not provided.");
     return;
   }
 
   const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
 
   const result = await api.sendMessage(`TLDR the following: ${msg}`);
-  await interaction.reply(result.text);
+  await interaction.followUp(result.text);
 };
 
 export { data, execute };
