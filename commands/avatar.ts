@@ -1,5 +1,4 @@
 import axios from "axios";
-import { CommandInterface } from "./CommandInterface";
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder, ColorResolvable } from "discord.js";
 import getColors from 'get-image-colors';
 

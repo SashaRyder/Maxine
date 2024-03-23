@@ -12,6 +12,7 @@ const data = new SlashCommandBuilder()
   );
 
 const execute = async (interaction: CommandInteraction) => {
+  await interaction.deferReply();
   const api = chatGPT();
 
   if(!api) {

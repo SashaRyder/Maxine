@@ -7,6 +7,7 @@ const data = new ContextMenuCommandBuilder()
 
 const execute = async (interaction: CommandInteraction) => {
   if (!interaction.isMessageContextMenuCommand) return;
+  await interaction.deferReply();
   const api = chatGPT();
 
   if(!api) {
