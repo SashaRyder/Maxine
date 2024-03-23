@@ -1,13 +1,14 @@
 import _ from "underscore";
-import { CommandInterface } from "./CommandInterface";
 import { ApplicationCommandType, CacheType, CommandInteraction, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction } from "discord.js";
 import * as deepl from 'deepl-node';
 
+const data = new ContextMenuCommandBuilder()
+  .setName("translate").setType(ApplicationCommandType.Message)
 
 const execute = async (interaction: CommandInteraction) => {
   if (!interaction.isMessageContextMenuCommand) return;
   const authKey = process.env.DEEPL_API_KEY;
-  if(!authKey) {
+  if (!authKey) {
     await interaction.reply("No DeepL API key given");
     return;
   };
@@ -19,8 +20,4 @@ const execute = async (interaction: CommandInteraction) => {
   await interaction.reply(`${result.detectedSourceLang.toUpperCase()}: ${msg}\r\n\r\nEN: ${result.text}`);
 };
 
-module.exports = {
-  data: new ContextMenuCommandBuilder()
-    .setName("translate").setType(ApplicationCommandType.Message),
-  execute,
-} as CommandInterface;
+export { data, execute };

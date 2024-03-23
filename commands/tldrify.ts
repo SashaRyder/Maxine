@@ -1,27 +1,24 @@
 import _ from "underscore";
-import { CommandInterface } from "./CommandInterface";
 import { ApplicationCommandType, CacheType, CommandInteraction, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction } from "discord.js";
-import { ChatGPTAPI } from 'chatgpt'
+
+const data = new ContextMenuCommandBuilder()
+  .setName("tldrify").setType(ApplicationCommandType.Message);
 
 const execute = async (interaction: CommandInteraction) => {
   if (!interaction.isMessageContextMenuCommand) return;
   const authKey = process.env.CHATGPT_API_KEY;
-  if(!authKey) {
+  if (!authKey) {
     await interaction.reply("No C-GPT API key given");
     return;
   };
 
   const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
-  const api = new ChatGPTAPI({
+  const api = await import("chatgpt").then((val) => new val.ChatGPTAPI({
     apiKey: authKey
-  });
+  }));
 
   const result = await api.sendMessage(`TLDR the following: ${msg}`);
   await interaction.reply(result.text);
 };
 
-module.exports = {
-  data: new ContextMenuCommandBuilder()
-    .setName("tldrify").setType(ApplicationCommandType.Message),
-  execute,
-} as CommandInterface;
+export { data, execute };

@@ -1,7 +1,9 @@
-import { CommandInterface } from "./CommandInterface";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 
+const data = new SlashCommandBuilder()
+  .setName("dog")
+  .setDescription("Returns a picture of a dog");
 
 const execute = async (interaction: CommandInteraction) => {
   const { data } = await axios.get(
@@ -11,9 +13,4 @@ const execute = async (interaction: CommandInteraction) => {
   await interaction.reply(data.message);
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("dog")
-    .setDescription("Returns a picture of a dog"),
-  execute,
-} as CommandInterface;
+export { data, execute };

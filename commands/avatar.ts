@@ -3,6 +3,15 @@ import { CommandInterface } from "./CommandInterface";
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder, ColorResolvable } from "discord.js";
 import getColors from 'get-image-colors';
 
+const data = new SlashCommandBuilder()
+  .setName("avatar")
+  .setDescription("Retrieves avatar for yourself or a user!")
+  .addUserOption((option) =>
+    option
+      .setName("user")
+      .setDescription("User you want to see the avatar for")
+  );
+
 const execute = async (interaction: CommandInteraction) => {
   await interaction.deferReply();
   const user = interaction.options.get("user")?.user || interaction.user;
@@ -17,14 +26,4 @@ const execute = async (interaction: CommandInteraction) => {
   interaction.followUp({ embeds: [avatarEmbed] });
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("avatar")
-    .setDescription("Retrieves avatar for yourself or a user!")
-    .addUserOption((option) =>
-      option
-        .setName("user")
-        .setDescription("User you want to see the avatar for")
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

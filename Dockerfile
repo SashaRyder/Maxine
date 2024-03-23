@@ -9,34 +9,21 @@ RUN apt-get update \
     && mv ffmpeg*/bin/ff* /deps \
     && chmod +x -R /deps
 
-FROM node:21.7.1-bullseye-slim as build
+FROM oven/bun:slim as final
+WORKDIR /usr/src/app
 
 ENV YOUTUBE_DL_SKIP_DOWNLOAD true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-
-WORKDIR /app
-RUN apt-get update \
-    && apt-get install python -y --no-install-recommends
-COPY . .
-RUN yarn install\
-    && yarn build\
-    && yarn install --production
-
-FROM node:21.7.1-bullseye-slim as final
-
 ENV NICKNAME=daisy
 
 RUN apt-get update \
     && apt-get install handbrake-cli firefox-esr python3 python-is-python3 -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+    
+COPY . .
 
-COPY --from=deps /deps/* /usr/bin/
-COPY --from=build /app/build /app/build
-COPY --from=build /app/node_modules /app/node_modules
+RUN bun install
 
 VOLUME [ "/data" ]
-
-WORKDIR /app/build
-
-CMD [ "node", "app.js" ]
+CMD [ "bun", "run", "app.ts" ]

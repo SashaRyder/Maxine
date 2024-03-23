@@ -1,12 +1,34 @@
-import fs from "fs";
 import * as hbjs from "handbrake-js";
 import { downloadVideo } from "../downloader";
 import tmp from "tmp";
-import { CommandInterface } from "./CommandInterface";
 import { uploadFile } from "../storage";
 import { AttachmentBuilder, CommandInteraction, Message, RESTJSONErrorCodes, SlashCommandBuilder } from "discord.js";
+import { unlink } from "node:fs/promises";
 
 const { NICKNAME } = process.env;
+
+const data = new SlashCommandBuilder()
+  .setName("convert")
+  .setDescription("Convert/Optimise video")
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("url")
+      .setDescription("Video URL to convert/optimise")
+      .addStringOption((option) =>
+        option.setName("url").setDescription("video URL").setRequired(true)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("attachment")
+      .setDescription("Attachment to convert/optimise")
+      .addAttachmentOption((option) =>
+        option
+          .setName("attachment")
+          .setDescription("video attachment")
+          .setRequired(true)
+      )
+  )
 
 const execute = async (interaction: CommandInteraction) => {
   const link = interaction.options.get("url");
@@ -44,18 +66,17 @@ const execute = async (interaction: CommandInteraction) => {
         }
         try {
           const interactionReply = await interaction
-          .followUp({
-            content: "Here you go!",
-            files: [new AttachmentBuilder(tmpNewFilename)],
-          });
+            .followUp({
+              content: "Here you go!",
+              files: [new AttachmentBuilder(tmpNewFilename)],
+            });
           interactionReply.edit(
             interactionReply.content +
-              `\r\n\r\nCopyable Link: <${
-                interactionReply.attachments.first().url
-              }>`
+            `\r\n\r\nCopyable Link: <${interactionReply.attachments.first().url
+            }>`
           );
         }
-        catch(error) {
+        catch (error) {
           if (
             error.code === RESTJSONErrorCodes.RequestEntityTooLarge
           ) {
@@ -68,8 +89,8 @@ const execute = async (interaction: CommandInteraction) => {
             interaction.followUp(`Sorry babe, there was an error :( ${error.code}`);
           }
         }
-        fs.unlinkSync(file);
-        fs.unlinkSync(tmpNewFilename);
+        unlink(file);
+        unlink(tmpNewFilename);
       });
   } catch (error) {
     console.log(error);
@@ -77,28 +98,4 @@ const execute = async (interaction: CommandInteraction) => {
   }
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("convert")
-    .setDescription("Convert/Optimise video")
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("url")
-        .setDescription("Video URL to convert/optimise")
-        .addStringOption((option) =>
-          option.setName("url").setDescription("video URL").setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("attachment")
-        .setDescription("Attachment to convert/optimise")
-        .addAttachmentOption((option) =>
-          option
-            .setName("attachment")
-            .setDescription("video attachment")
-            .setRequired(true)
-        )
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

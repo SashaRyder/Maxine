@@ -1,15 +1,13 @@
 import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
 import { clientReady, guildCreate, guildLeave } from "./functions";
-import fs, { existsSync } from "fs";
-import { CommandInterface } from "./commands/CommandInterface";
-import { submitPostsForChannel } from "./commands/reddit";
+import {submitPostsForChannel} from "./commands/reddit";
 import cron from "node-cron";
-import moment from "moment";
 import { startInspector } from "./inspector";
 import _ from "underscore";
 import { Sequelize } from 'sequelize';
 import { Reddit, Sequelize as SequelizeModel } from "./models";
+import { Glob } from "bun";
 
 const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
@@ -21,15 +19,14 @@ const commands = [];
 
 client.commands = new Collection();
 
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs
-  .readdirSync(commandsPath)
-  .filter((file) => file.endsWith(".js"));
+const glob = new Glob("**/!(*.d).ts");
 
-for (const file of commandFiles) {
+const commandsPath = path.join(import.meta.dir, "commands");
+const commandFiles = glob.scan(commandsPath);
+
+for await (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
-  const command = require(filePath) as CommandInterface;
-  // Set a new item in the Collection with the key as the command name and the value as the exported module
+  const command = await import(filePath);
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command);
     commands.push(command.data.toJSON());
@@ -69,27 +66,11 @@ client.on("ready", async () => {
   const reddit = Reddit.init(Reddit.configuration, { sequelize });
   await reddit.sync();
 
-  if (existsSync("/data/schedule.json")) {
-    const file = fs.readFileSync("/data/schedule.json", {encoding: "utf-8"});
-    const tasks: {
-      subreddit: string;
-      interval: number;
-      guildId: string;
-      channelId: string;
-      posted: string[];
-      lastRan: Date;
-    }[] = JSON.parse(file);
-    await reddit.bulkCreate<Reddit>(tasks.map((task) => ({
-      ...task,
-      posted: JSON.stringify(task.posted) }),
-    ));
-    fs.unlinkSync("/data/schedule.json");
-  }
   if (cron.getTasks().size === 0) {
     cron.schedule("*/30 * * * *", async () => {
       const startPostTimes = 12;
       const endPostTimes = 23;
-      const timeNow = moment().hour();
+      const timeNow = new Date().getHours();
       if (timeNow < startPostTimes || timeNow > endPostTimes) return;
       console.info("CRON Starting...");
       const tasks: Reddit[] = await reddit.findAll();

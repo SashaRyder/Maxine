@@ -1,4 +1,3 @@
-import { CommandInterface } from "./CommandInterface";
 import { Builder, Browser } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
 import {
@@ -6,6 +5,15 @@ import {
   CommandInteraction,
   MessagePayload,
 } from "discord.js";
+
+const data = new SlashCommandBuilder()
+  .setName("time")
+  .setDescription("Check the time for a location")
+  .addStringOption((option) =>
+    option
+      .setName("location")
+      .setDescription("Location of where you want to search")
+  );
 
 const execute = async (interaction: CommandInteraction) => {
   const location = interaction.options.get("location")?.value;
@@ -25,7 +33,7 @@ const execute = async (interaction: CommandInteraction) => {
   await interaction.deferReply();
 
   const options = new firefox.Options()
-  .addArguments("--headless");
+    .addArguments("--headless");
 
   const driver = await new Builder().forBrowser(Browser.FIREFOX).setFirefoxOptions(options).build();
   await driver.get(`https://www.google.com/search?q=time+${location}&aqs=chrome.0.69i59l2.771j0j1&sourceid=chrome&ie=UTF-8&lr=lang_en`)
@@ -53,14 +61,4 @@ const execute = async (interaction: CommandInteraction) => {
   driver.close();
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("time")
-    .setDescription("Check the time for a location")
-    .addStringOption((option) =>
-      option
-        .setName("location")
-        .setDescription("Location of where you want to search")
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

@@ -1,11 +1,7 @@
-import { exec } from "child_process";
 import tmp from "tmp";
-import util from "util";
-import fs from "fs";
 
 const { NICKNAME } = process.env;
 
-const execAsync = util.promisify(exec);
 
 export const downloadVideo = async (url: string, showWarnings: boolean, isClip: boolean): Promise<string> => {
     const randomFileName = tmp.tmpNameSync({ dir: "./", prefix: NICKNAME });
@@ -18,19 +14,21 @@ export const downloadVideo = async (url: string, showWarnings: boolean, isClip: 
         cmd += " --max-filesize 100m";
     }
     cmd += ` -o "${randomFileName}.%(ext)s"`;
-    const process = await execAsync(cmd);
-    if (!process.stderr) {
+    const {stdout, exited} = Bun.spawn({cmd: cmd.split(" ")});
+    const exitCode = await exited
+    const stdoutstr = await new Response(stdout).text();
+    if (!exitCode) {
         const extArr = RegExp(`${randomFileName}.(.*)`)
-            .exec(process.stdout)[0]
+            .exec(stdoutstr)[0]
             .split(".")
             .splice(-1, 1)
             .filter((x) => x !== "");
-        const isMerger = RegExp("Merging formats into").exec(process.stdout);
+        const isMerger = RegExp("Merging formats into").exec(stdoutstr);
         const ext = extArr.length > 0 && !isMerger ? extArr[0] : "mp4";
         const filePath = `${randomFileName}.${ext}`;
-        if (!fs.existsSync(filePath)) {
+        if (!Bun.file(filePath).exists()) {
             const possibleError = RegExp("File is larger than max-filesize").exec(
-                process.stdout
+                stdoutstr
             );
             if (possibleError) {
                 throw new Error("Can't find a small enough file");

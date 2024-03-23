@@ -1,12 +1,21 @@
 import * as Discord from "discord.js";
-import { CommandInterface } from "./CommandInterface";
 import { SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 
 interface urbanListItem { definition: string; word: string }
 interface urbanResponse { list: urbanListItem[] };
 
-export const execute = async (interaction: Discord.CommandInteraction) => {
+const data = new SlashCommandBuilder()
+  .setName("urban")
+  .setDescription("Queries urban dictionary")
+  .addStringOption((option) =>
+    option
+      .setName("query")
+      .setDescription("What to look-up.")
+      .setRequired(true)
+  );
+
+const execute = async (interaction: Discord.CommandInteraction) => {
 
   const toUrban = interaction.options.get("query").value as string;
   let resultsToUse: urbanListItem[] = [];
@@ -25,15 +34,4 @@ export const execute = async (interaction: Discord.CommandInteraction) => {
   }
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("urban")
-    .setDescription("Queries urban dictionary")
-    .addStringOption((option) =>
-      option
-        .setName("query")
-        .setDescription("What to look-up.")
-        .setRequired(true)
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

@@ -1,10 +1,15 @@
-import { CommandInterface } from "./CommandInterface";
 import {
   CommandInteraction,
   SlashCommandBuilder,
   RESTJSONErrorCodes,
   CacheType,
 } from "discord.js";
+
+const data = new SlashCommandBuilder()
+  .setName("afk")
+  .setDescription(
+    "Appends -AFK to users nickname (Or un-appends depending if you're already AFK!)"
+  );
 
 const execute = async (interaction: CommandInteraction<CacheType>) => {
   const afkAppend = "- AFK";
@@ -38,11 +43,4 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
   }
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("afk")
-    .setDescription(
-      "Appends -AFK to users nickname (Or un-appends depending if you're already AFK!)"
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

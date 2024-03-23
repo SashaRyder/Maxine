@@ -1,24 +1,17 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "target": "ESNext",
-    "lib": [
-      "es6",
-      "DOM",
-      "ES2021.String"
-    ],
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext"],
+    "types": ["bun-types"],
     "sourceMap": true,
     "outDir": "build",
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
       "assets/*": [
         "./assets/*"
       ]
     },
-  },
-  "exclude": [
-    "tmp/node_modules",
-    "commands2"
-  ]
+  }
 }

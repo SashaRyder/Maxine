@@ -1,6 +1,15 @@
 import _ from "underscore";
-import { CommandInterface } from "./CommandInterface";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+
+const data = new SlashCommandBuilder()
+.setName("8ball")
+.setDescription("8ball answers any question!")
+.addStringOption((option) =>
+  option
+    .setName("question")
+    .setDescription("The question to ask the magic 8ball")
+    .setRequired(true)
+);
 
 const execute = async (interaction: CommandInteraction) => {
   const opts = [
@@ -22,15 +31,4 @@ const execute = async (interaction: CommandInteraction) => {
   await interaction.reply(_.sample(opts));
 };
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("8ball")
-    .setDescription("8ball answers any question!")
-    .addStringOption((option) =>
-      option
-        .setName("question")
-        .setDescription("The question to ask the magic 8ball")
-        .setRequired(true)
-    ),
-  execute,
-} as CommandInterface;
+export { data, execute };

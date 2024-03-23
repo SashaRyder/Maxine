@@ -1,5 +1,4 @@
 import tmp from "tmp";
-import { CommandInterface } from "./CommandInterface";
 import Jimp from "jimp";
 import { AttachmentBuilder, CommandInteraction, SlashCommandBuilder } from "discord.js";
 
@@ -57,11 +56,34 @@ const findBottomSide = (scope: Jimp, w: number, h: number): number => {
     }
 }
 
+const data = new SlashCommandBuilder()
+    .setName("crop")
+    .setDescription("crop images to 16:9")
+    .addSubcommand((subcommand) =>
+        subcommand
+            .setName("url")
+            .setDescription("Image URL to crop")
+            .addStringOption((option) =>
+                option.setName("url").setDescription("image URL").setRequired(true)
+            )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand
+            .setName("attachment")
+            .setDescription("Attachment to crop")
+            .addAttachmentOption((option) =>
+                option
+                    .setName("attachment")
+                    .setDescription("image attachment")
+                    .setRequired(true)
+            )
+    );
+
 const execute = async (interaction: CommandInteraction) => {
     await interaction.deferReply();
     const url = interaction.options.get("url");
     const attachment = interaction.options.get("attachment");
-  
+
     const link = url?.value as string || attachment?.attachment?.url as string;
 
     const fileExt = link.split(".").slice(-1)[0];
@@ -74,28 +96,4 @@ const execute = async (interaction: CommandInteraction) => {
     });
 }
 
-module.exports = {
-    data: new SlashCommandBuilder()
-      .setName("crop")
-      .setDescription("crop images to 16:9")
-      .addSubcommand((subcommand) =>
-        subcommand
-          .setName("url")
-          .setDescription("Image URL to crop")
-          .addStringOption((option) =>
-            option.setName("url").setDescription("image URL").setRequired(true)
-          )
-      )
-      .addSubcommand((subcommand) =>
-        subcommand
-          .setName("attachment")
-          .setDescription("Attachment to crop")
-          .addAttachmentOption((option) =>
-            option
-              .setName("attachment")
-              .setDescription("image attachment")
-              .setRequired(true)
-          )
-      ),
-    execute,
-  } as CommandInterface;
+export { data, execute };
