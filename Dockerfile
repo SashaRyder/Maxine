@@ -16,6 +16,8 @@ ENV YOUTUBE_DL_SKIP_DOWNLOAD true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV NICKNAME=daisy
 
+COPY --from=deps /deps/* /usr/bin/
+
 RUN apt-get update \
     && apt-get install handbrake-cli firefox-esr python3 python-is-python3 -y --no-install-recommends \
     && apt-get clean \
