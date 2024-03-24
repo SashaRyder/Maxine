@@ -35,7 +35,7 @@ const execute = async (interaction: CommandInteraction) => {
   const attachment = interaction.options.get("attachment");
 
   const url = link?.value as string || attachment?.attachment?.url as string;
-  const randomFileName = tmp.tmpNameSync({ dir: "/tmp", prefix: NICKNAME });
+  const randomFileName = tmp.tmpNameSync({ prefix: NICKNAME });
   const tmpNewFilename = `${randomFileName}.mp4`;
   await interaction.reply("Starting conversion!");
   try {

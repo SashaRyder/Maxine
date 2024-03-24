@@ -51,7 +51,7 @@ const execute = async (interaction: CommandInteraction) => {
     const link = url?.value as string || attachment?.attachment?.url as string;
 
     const fileExt = link.split(".").slice(-1)[0];
-    const tmpFileName = tmp.tmpNameSync({ dir: "/tmp", prefix: `${NICKNAME}-img`, postfix: `.${fileExt}` });
+    const tmpFileName = tmp.tmpNameSync({ prefix: `${NICKNAME}-img`, postfix: `.${fileExt}` });
 
 
     let jimpImg = null;
