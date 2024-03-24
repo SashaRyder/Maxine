@@ -12,7 +12,7 @@ export const downloadVideo = async (url: string, showWarnings: boolean, isClip: 
             "--add-header", "User-Agent:facebookexternalhit/1.1",
             "--no-check-certificate",
             "-f", 'bv*[ext=mp4][vcodec=h264]+ba[ext=m4a]/b[ext=mp4][vcodec=h264]/bv[vcodec=h264]+ba/bv+ba/b',
-            !isClip ? '--max-filesize 100m' : '',
+            ...(!isClip ? ['--max-filesize', '100m'] : []),
             `-o`, `${randomFileName}.%(ext)s`,
             "--merge-output-format", "mp4",
             url
