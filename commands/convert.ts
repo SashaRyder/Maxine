@@ -1,7 +1,7 @@
 import * as hbjs from "handbrake-js";
 import { downloadVideo } from "../downloader";
 import tmp from "tmp";
-import { uploadFile } from "../storage";
+import { canUploadToAzure, uploadFile } from "../storage";
 import { AttachmentBuilder, CommandInteraction, Message, RESTJSONErrorCodes, SlashCommandBuilder } from "discord.js";
 import { unlink } from "node:fs/promises";
 
@@ -80,10 +80,13 @@ const execute = async (interaction: CommandInteraction) => {
           if (
             error.code === RESTJSONErrorCodes.RequestEntityTooLarge
           ) {
-            const azureUrl = await uploadFile(tmpNewFilename);
-            await interaction.followUp({
-              content: `Here you go! \r\n\r\n ${azureUrl}`,
-            });
+            if (canUploadToAzure()) {
+              const azureUrl = await uploadFile(tmpNewFilename);
+              await interaction.followUp({ content: `Here you go ^_^ \r\n\r\n ${azureUrl}` });
+            }
+            else {
+              await interaction.followUp({ content: 'File size too large.' });
+            }
           } else {
             console.log(error);
             interaction.followUp(`Sorry babe, there was an error :( ${error.code}`);

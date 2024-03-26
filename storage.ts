@@ -13,6 +13,11 @@ if(AZURE_STORAGE_CONNECTION_STRING) {
     containerClient = blobServiceClient.getContainerClient(containerName);
     containerClient.createIfNotExists({ access: "container" });
 }
+
+const canUploadToAzure = (): boolean => {
+    return !!containerClient;
+}
+
 const uploadFile = async (filePath: string) => {
     if(!containerClient) {
         throw "Azure Storage Not Configured.";
@@ -24,5 +29,6 @@ const uploadFile = async (filePath: string) => {
 }
 
 export {
-    uploadFile
+    uploadFile,
+    canUploadToAzure
 }

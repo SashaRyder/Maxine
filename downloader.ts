@@ -20,20 +20,18 @@ export const downloadVideo = async (url: string, showWarnings: boolean, isClip: 
     });
     const exitCode = await exited;
     const stdoutstr = await new Response(stdout).text();
-    if (!exitCode) {
-        const glob = new Glob(`**/${randomFileName.substring(randomFileName.lastIndexOf("/") + 1)}.*`);
-        const filePath = Array.from(glob.scanSync({ absolute: true, cwd: "/tmp" }))[0];
-        if (!await Bun.file(filePath).exists()) {
-            const possibleError = RegExp("File is larger than max-filesize").exec(
-                stdoutstr
-            );
-            if (possibleError) {
-                throw new Error("Can't find a small enough file");
-            }
-            else {
-                throw new Error("Unknown Error");
-            }
+    const glob = new Glob(`**/${randomFileName.substring(randomFileName.lastIndexOf("/") + 1)}.*`);
+    const filePath = Array.from(glob.scanSync({ absolute: true, cwd: "/tmp" }))[0];
+    if (!await Bun.file(filePath).exists()) {
+        const fileTooLargeError = RegExp("File is larger than max-filesize").exec(
+            stdoutstr
+        );
+        if (fileTooLargeError) {
+            throw new Error("Can't find a small enough file");
         }
-        return filePath;
+        else {
+            throw new Error("Unknown Error");
+        }
     }
+    return filePath;
 }

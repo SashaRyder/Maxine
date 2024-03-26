@@ -1,5 +1,5 @@
 import tmp from "tmp";
-import { uploadFile } from "../storage";
+import { canUploadToAzure, uploadFile } from "../storage";
 import { downloadVideo } from "../downloader";
 import {
   AttachmentBuilder,
@@ -71,8 +71,13 @@ const execute = async (interaction: CommandInteraction) => {
     );
   } catch (error) {
     if (error.code === RESTJSONErrorCodes.RequestEntityTooLarge) {
-      const azureUrl = await uploadFile(filePath);
-      await interaction.followUp({ content: `Here you go ^_^ \r\n\r\n ${azureUrl}` });
+      if(canUploadToAzure()) {
+        const azureUrl = await uploadFile(filePath);
+        await interaction.followUp({ content: `Here you go ^_^ \r\n\r\n ${azureUrl}` });
+      }
+      else {
+        await interaction.followUp({ content: 'File size too large.' });
+      }
     } else {
       await interaction.followUp(
         `We got an oopsie :( Error code is ${error.code}; ${error.message}`
