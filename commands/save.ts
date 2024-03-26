@@ -84,8 +84,13 @@ const execute = async (interaction: CommandInteraction) => {
       );
     }
   }
-  await Bun.file(filePath).exists() && unlink(filePath);
-  await Bun.file(firstFilePath).exists() && unlink(firstFilePath);
+
+  //Try delete tmp files afterwards
+  // We don't care if they fail
+  try {
+    await unlink(filePath).catch();
+    await unlink(firstFilePath).catch();
+  }
 };
 
 export { data, execute };
