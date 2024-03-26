@@ -87,10 +87,8 @@ const execute = async (interaction: CommandInteraction) => {
 
   //Try delete tmp files afterwards
   // We don't care if they fail
-  try {
-    await unlink(filePath).catch();
-    await unlink(firstFilePath).catch();
-  }
+  await unlink(filePath).catch();
+  await unlink(firstFilePath).catch();
 };
 
 export { data, execute };
