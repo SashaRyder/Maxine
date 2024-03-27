@@ -32,7 +32,8 @@ const execute = async (interaction: CommandInteraction) => {
         n: 1,
         size: "1024x1024",
         quality: 'standard',
-        response_format: 'b64_json'
+        response_format: 'b64_json',
+        user: interaction.user.username
     });
     const base64 = response.data[0].b64_json;
     const buffer = Buffer.from(base64, "base64");
