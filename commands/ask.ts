@@ -25,7 +25,7 @@ const execute = async (interaction: CommandInteraction) => {
 
   const msg = interaction.options.get("query").value as string;
 
-  let assistantId = process.env.CHATGPT_ASSISTANT_ID;
+  const assistantId = process.env.CHATGPT_ASSISTANT_ID;
 
   if (!assistantId) {
     return await interaction.reply("Assistant ID not provided.");
