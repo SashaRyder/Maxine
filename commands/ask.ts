@@ -25,7 +25,7 @@ const execute = async (interaction: CommandInteraction) => {
 
   const msg = interaction.options.get("query").value as string;
 
-  let assistantId = process.env.CHATGPT_ASSISTANT_ID;
+  const assistantId = process.env.CHATGPT_ASSISTANT_ID;
 
   if (!assistantId) {
     return await interaction.reply("Assistant ID not provided.");
@@ -47,20 +47,22 @@ const execute = async (interaction: CommandInteraction) => {
     additional_instructions: `Please address the user as ${interaction.user.displayName}.`,
   });
 
-  let response: { type: 'text' | 'image', content: string } = null;
+  let result: OpenAI.Beta.Threads.Runs.Run = null;
+  let interval = 0;
+  do {
+    result = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    console.log('Waiting for completion. Current status: ' + result.status);
+    interval++;
+    await sleep(5000);
+  } while (result.status !== 'completed' || interval <= 10);
 
-  while (true) {
-    const result = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    if (result.status == 'completed') {
-      const messages = await openai.beta.threads.messages.list(thread.id, { order: "desc" });
-      const content = messages.data[0].content[0];
-      response = content.type === "text" ? { content: content.text.value, type: "text" } : { content: content.image_file.file_id, type: "image" };
-      break;
-    } else {
-      console.log('Waiting for completion. Current status: ' + result.status);
-      await sleep(5000);
-    }
+  if (result.status !== 'completed') {
+    return await interaction.followUp('Request timed out.');
   }
+
+  const messages = await openai.beta.threads.messages.list(thread.id, { order: "desc" });
+  const content = messages.data[0].content[0];
+  const response = content.type === "text" ? { content: content.text.value, type: "text" } : { content: content.image_file.file_id, type: "image" };
 
   if (response.type === 'text') {
     return await interaction.followUp(response.content);
