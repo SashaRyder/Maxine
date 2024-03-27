@@ -1,24 +1,33 @@
 import _ from "underscore";
 import { ApplicationCommandType, CacheType, CommandInteraction, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction } from "discord.js";
-import { chatGPT } from "../chatGPT";
+import OpenAI from 'openai';
 
 const data = new ContextMenuCommandBuilder()
   .setName("tldrify").setType(ApplicationCommandType.Message);
 
 const execute = async (interaction: CommandInteraction) => {
   if (!interaction.isMessageContextMenuCommand) return;
-  await interaction.deferReply();
-  const api = chatGPT();
+  const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
 
-  if(!api) {
+  const openai = new OpenAI({
+    apiKey: process.env.CHATGPT_API_KEY
+  });
+
+  if(!openai.apiKey) {
     interaction.followUp("Chat GPT API key not provided.");
     return;
   }
 
-  const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
+  await interaction.deferReply();
 
-  const result = await api.sendMessage(`TLDR the following: ${msg}`);
-  await interaction.followUp(result.text);
+  const chatCompletion = await openai.chat.completions.create({
+    user: interaction.user.username,
+    messages: [{ role: 'user', name: interaction.user.displayName, content: `TLDR the following: ${msg}` }],
+    model: 'gpt-3.5-turbo',
+  });
+
+  const result = chatCompletion.choices[0].message;
+  await interaction.followUp(result.content);
 };
 
 export { data, execute };
