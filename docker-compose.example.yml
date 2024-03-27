@@ -1,21 +1,18 @@
-version: '3.7'
 services:
-    daisy-discord-bot:
-      container_name: daisy-discord-bot
-      build: .
+    maxine:
+      container_name: maxine
+      image: ghcr.io/sasharyder/daisy-discord-bot:latest
       restart: always
-      # ports:
-      #   - 8075:8075 Only used for debugging locally.
       volumes:
         - "./data:/data"
       environment:
         - TZ=Europe/London
         - DISCORD_TOKEN=123
-        - NICKNAME=Daisy
-        - STATUS=Daisy Bot!
-        - AZURE_STORAGE_CONNECTION_STRING=
-        - EMBED_URL=
-        - ENABLE_INSPECTOR=false
-        - EMBED_SERVER_PORT=12345
-        - DEEPL_API_KEY=1234
-        - CHATGPT_API_KEY=1234
+        - NICKNAME=Maxine
+        - STATUS=Hello!
+        - AZURE_STORAGE_CONNECTION_STRING= #Optional
+        - EMBED_URL= #Optional
+        - EMBED_SERVER_PORT=12345 #Optional
+        - DEEPL_API_KEY=1234 #Optional
+        - CHATGPT_API_KEY=1234 #Optional
+        - CHATGPT_ASSISTANT_ID=1234 #Optional

@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 
 ENV YOUTUBE_DL_SKIP_DOWNLOAD true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV NICKNAME=daisy
+ENV NICKNAME=Maxine
 
 COPY --from=deps /deps/* /usr/bin/
 
