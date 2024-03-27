@@ -11,7 +11,7 @@ const execute = async (interaction: CommandInteraction) => {
   if (!authKey) {
     await interaction.reply("No DeepL API key given");
     return;
-  };
+  }
 
   const msg = (interaction as MessageContextMenuCommandInteraction<CacheType>).targetMessage.content;
   const translator = new deepl.Translator(authKey);

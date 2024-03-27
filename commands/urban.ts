@@ -3,7 +3,7 @@ import { SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 
 interface urbanListItem { definition: string; word: string }
-interface urbanResponse { list: urbanListItem[] };
+interface urbanResponse { list: urbanListItem[] }
 
 const data = new SlashCommandBuilder()
   .setName("urban")
