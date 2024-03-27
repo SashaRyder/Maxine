@@ -45,7 +45,7 @@ Maxine is regularly updated with new features and improvements to ensure a seaml
 
 ## Getting Started:
 
-Maxine is dockerised. Just view [here](/blob/master/docker-compose.example.yml) for the example docker compose file.
+Maxine is dockerised. Just view [here](docker-compose.example.yml) for the example docker compose file.
 
 ## Feedback and Support:
 
