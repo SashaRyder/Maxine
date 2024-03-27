@@ -1,7 +1,7 @@
 services:
     maxine:
       container_name: maxine
-      image: ghcr.io/sasharyder/daisy-discord-bot:latest
+      image: ghcr.io/sasharyder/maxine:latest
       restart: always
       volumes:
         - "./data:/data"
