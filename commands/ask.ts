@@ -57,6 +57,7 @@ const execute = async (interaction: CommandInteraction) => {
   } while (result.status !== 'completed' || interval <= 10);
 
   if (result.status !== 'completed') {
+    await openai.beta.threads.runs.cancel(thread.id, run.id);
     return await interaction.followUp('Request timed out.');
   }
 
