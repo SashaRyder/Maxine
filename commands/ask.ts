@@ -53,7 +53,7 @@ const execute = async (interaction: CommandInteraction) => {
     console.log('Waiting for completion. Current status: ' + result.status);
     interval++;
     await sleep(5000);
-  } while (result.status !== 'completed' || interval <= 10);
+  } while (result.status !== 'completed' && interval <= 10);
 
   if (result.status !== 'completed') {
     await openai.beta.threads.runs.cancel(thread.id, run.id);
