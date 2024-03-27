@@ -1,7 +1,6 @@
 import { sleep } from "bun";
 import { AttachmentBuilder, CommandInteraction, SlashCommandBuilder } from "discord.js";
 import OpenAI from "openai";
-import { TextContentBlock } from "openai/resources/beta/threads/index.mjs";
 
 const data = new SlashCommandBuilder()
   .setName("ask")
@@ -71,7 +70,7 @@ const execute = async (interaction: CommandInteraction) => {
 
   const file = await openai.files.content(response.content);
   const img = Buffer.from(await file.arrayBuffer());
-  return await interaction.followUp({ files: [new AttachmentBuilder(img)] });
+  return await interaction.followUp({ files: [new AttachmentBuilder(img, { name: "generation.png" })] });
 };
 
 export { data, execute };
