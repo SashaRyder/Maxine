@@ -1,7 +1,7 @@
 import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
 import { clientReady, guildCreate, guildLeave } from "./functions";
-import {submitPostsForChannel} from "./commands/reddit";
+import { submitPostsForChannel } from "./commands/reddit";
 import cron from "node-cron";
 import { startInspector } from "./inspector";
 import _ from "underscore";
@@ -105,10 +105,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    await interaction.reply({
-      content: "There was an error while executing this command!",
-      ephemeral: true,
-    });
+    if (!interaction.replied) {
+      (interaction.deferred ? interaction.followUp : interaction.reply)({
+        content: `There was an error while executing this command:\r\n\r\n${error.toString()}`
+      });
+    }
+
   }
 });
 
