@@ -57,4 +57,4 @@ Contributions to Maxine are welcome! Whether it's fixing bugs, adding new featur
 
 ## License:
 
-Maxine is released under the [MIT License](#). Feel free to use, modify, and distribute it according to your needs.
+Maxine is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute it according to your needs.
