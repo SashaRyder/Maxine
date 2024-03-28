@@ -1,4 +1,4 @@
-import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
+import { Client, Collection, ContextMenuCommandAssertions, Events, Partials, REST, Routes } from "discord.js";
 import path from "path";
 import { clientReady, guildCreate, guildLeave } from "./functions";
 import { submitPostsForChannel } from "./commands/reddit";
@@ -92,7 +92,7 @@ client.on("guildCreate", (guild) => guildCreate(guild, client));
 
 client.on("guildDelete", (guild) => guildLeave(guild, client));
 
-client.on(Events.InteractionCreate, async (interaction) => {
+client.on(Events.InteractionCreate, async (interaction): Promise<any> => {
   if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
@@ -100,17 +100,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
     console.error(`No command matching ${interaction.commandName} was found.`);
     return;
   }
+  console.log(`${interaction.user.username} - ${interaction.guild.name}: ${interaction.commandName}`);
 
   try {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
     if (!interaction.replied) {
-      (interaction.deferred ? interaction.followUp : interaction.reply)({
-        content: `There was an error while executing this command:\r\n\r\n${error.toString()}`
-      });
+      const errBody = { content: `There was an error while executing this command:\r\n\r\n${error.toString()}` };
+      if (interaction.deferred) {
+        return await interaction.followUp(errBody)
+      }
+      return await interaction.reply(errBody);
     }
-
   }
 });
 
