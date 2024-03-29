@@ -3,11 +3,9 @@ FROM debian:bullseye-slim as deps
 
 # Install required dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends wget xz-utils ca-certificates \
-    && wget -qO /deps/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
-    && wget -qO- https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz | tar -xJ -C /tmp \
-    && wget -qO- https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz | tar -xz -C /tmp \
-    && mv /tmp/geckodriver /deps \
+    && apt-get install -y --no-install-recommends curl xz-utils ca-certificates \
+    && curl -s -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp --create-dirs -o /deps/yt-dlp \
+    && curl -s -L https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz | tar -xJ -C /tmp \
     && mv /tmp/ffmpeg*/bin/ff* /deps \
     && chmod +x -R /deps
 
@@ -27,7 +25,7 @@ COPY --from=deps /deps/* /usr/bin/
 
 # Install additional packages
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends handbrake-cli firefox-esr python3 python-is-python3 \
+    && apt-get install -y --no-install-recommends handbrake-cli python3 python-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
