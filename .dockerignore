@@ -2,3 +2,9 @@ node_modules
 tmp
 build
 .github
+daisy
+.git
+.gitignore
+docker-compose.example.yml
+LICENSE
+README.md
