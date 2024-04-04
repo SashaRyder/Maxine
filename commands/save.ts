@@ -59,7 +59,7 @@ const execute = async (interaction: CommandInteraction) => {
 	const secondaryTempFile = tmp.tmpNameSync({
 		prefix: NICKNAME,
 	});
-	const convertArgs = needsConvert && ext === "gif" ? GIF_ARGS : "";
+	const convertArgs = needsConvert && ext === "gif" ? GIF_ARGS : "-c:v copy -c:a copy";
 	if (isClip) {
 		const startTime = timestampToSeconds(clip_start);
 		const endTime = timestampToSeconds(clip_end);
