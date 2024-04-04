@@ -13,6 +13,8 @@ import { secondsToTimestamp } from "../secondsToTimestamp";
 
 const { NICKNAME } = process.env;
 
+const GIF_ARGS = "-vf fps=24,scale=320:-1:flags=lanczos -c:v gif";
+
 const data = new SlashCommandBuilder()
 	.setName("save")
 	.setDescription("Saves video from URL")
@@ -24,6 +26,11 @@ const data = new SlashCommandBuilder()
 	)
 	.addStringOption((option) =>
 		option.setName("clip_end").setDescription("end of clip"),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("as")
+			.setDescription("custom file format (gif, webm) default is MP4."),
 	);
 
 const execute = async (interaction: CommandInteraction) => {
@@ -31,6 +38,7 @@ const execute = async (interaction: CommandInteraction) => {
 	const url = interaction.options.get("url").value as string;
 	const clip_start = interaction.options.get("clip_start")?.value as string;
 	const clip_end = interaction.options.get("clip_end")?.value as string;
+	const as = (interaction.options.get("as")?.value as string) || "mp4";
 
 	const isClip = !!clip_start && !!clip_end;
 
@@ -45,19 +53,31 @@ const execute = async (interaction: CommandInteraction) => {
 	console.log("Download Completed. File Path: ", filePath);
 
 	const firstFilePath = filePath;
-	const ext = filePath.split(".").slice(-1)[0];
+	const filePathExt = filePath.split(".").slice(-1)[0];
+	const ext = filePathExt === as ? filePathExt : as;
+	const needsConvert = filePathExt !== as;
 	const secondaryTempFile = tmp.tmpNameSync({
 		prefix: NICKNAME,
 	});
+	const convertArgs = needsConvert && ext === "gif" ? GIF_ARGS : "";
 	if (isClip) {
 		const startTime = timestampToSeconds(clip_start);
 		const endTime = timestampToSeconds(clip_end);
 		const duration = secondsToTimestamp(endTime - startTime);
 		const ffmpegCommand = `-ss ${secondsToTimestamp(
 			startTime,
-		)} -i ${filePath} -to ${duration} ${secondaryTempFile}.${ext}`;
+		)} -i ${filePath} -to ${duration} ${convertArgs} ${secondaryTempFile}.${ext}`;
 		filePath = `${secondaryTempFile}.${ext}`;
 		const command = `ffmpeg ${ffmpegCommand}`;
+		const { exited, stdout } = Bun.spawn(command.split(" "));
+		const exitCode = await exited;
+		if (exitCode !== 0) {
+			const stdoutstr = await new Response(stdout).text();
+			return await interaction.followUp(stdoutstr);
+		}
+	} else if (needsConvert) {
+		filePath = `${secondaryTempFile}.${ext}`;
+		const command = `ffmpeg -i ${filePath} ${convertArgs} ${secondaryTempFile}.${ext}`;
 		const { exited, stdout } = Bun.spawn(command.split(" "));
 		const exitCode = await exited;
 		if (exitCode !== 0) {
