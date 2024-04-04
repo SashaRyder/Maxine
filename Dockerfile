@@ -25,7 +25,7 @@ COPY --from=deps /deps/* /usr/bin/
 
 # Install additional packages
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends handbrake-cli python3 python-is-python3 \
+    && apt-get install -y --no-install-recommends python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

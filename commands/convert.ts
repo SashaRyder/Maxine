@@ -1,6 +1,3 @@
-import * as hbjs from "handbrake-js";
-import { downloadVideo } from "../downloader";
-import tmp from "tmp";
 import { canUploadToAzure, uploadFile } from "../storage";
 import {
 	AttachmentBuilder,
@@ -50,8 +47,7 @@ const execute = async (interaction: CommandInteraction) => {
 	const link = interaction.options.get("url");
 	const attachment = interaction.options.get("attachment");
 
-	const url =
-		(link?.value as string) || (attachment?.attachment?.url as string);
+	const url = (link ? link.value : attachment.attachment.url) as string;
 	const ext = (interaction.options.get("as")?.value as string) || "mp4";
 	const { exitCode, stdout, file } = await convertFile(url, ext, false);
 	if (exitCode !== 0) {
