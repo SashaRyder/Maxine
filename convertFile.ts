@@ -12,14 +12,14 @@ export const convertArguments = (ext: string): string => {
     return ext === "gif" ? GIF_ARGS : BASE_ARGS;
 }
 
-export const convertFile = async (url: string, ext: string, isLocalFile: boolean): Promise<{ exitCode: number, stdout?: string, file?: string }> => {
+export const convertFile = async (url: string, ext: string, isLocalFile: boolean, extraFfmpegArgs: string = ''): Promise<{ exitCode: number, stdout?: string, file?: string }> => {
     const secondaryTempFile = tmp.tmpNameSync({
         prefix: NICKNAME,
         postfix: `.${ext}`
     });
     const filePath = isLocalFile ? url : await downloadVideo(url, false, false);
     const convertArgs = convertArguments(ext);
-    const command = `ffmpeg -i ${filePath} ${convertArgs} ${secondaryTempFile}`;
+    const command = `ffmpeg -i ${filePath} ${extraFfmpegArgs} ${convertArgs} ${secondaryTempFile}`;
     const { exited, stdout } = Bun.spawn(command.split(" "));
     const exitCode = await exited;
     if (exitCode !== 0) {

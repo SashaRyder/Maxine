@@ -1,4 +1,3 @@
-import tmp from "tmp";
 import { canUploadToAzure, uploadFile } from "../storage";
 import { downloadVideo } from "../downloader";
 import {
@@ -8,11 +7,13 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { unlink } from "node:fs/promises";
-import { timestampToSeconds } from "../timestampToSeconds";
-import { secondsToTimestamp } from "../secondsToTimestamp";
-import { convertArguments, convertFile } from "../convertFile";
+import { convertFile } from "../convertFile";
 
-const { NICKNAME } = process.env;
+const formatTimestamp = (ts: string) =>
+	ts
+		.split(":")
+		.map((val) => val.padStart(2, "0"))
+		.join(":");
 
 const data = new SlashCommandBuilder()
 	.setName("save")
@@ -55,26 +56,21 @@ const execute = async (interaction: CommandInteraction) => {
 	const filePathExt = filePath.split(".").slice(-1)[0];
 	const ext = filePathExt === as ? filePathExt : as;
 	const needsConvert = filePathExt !== as;
-	const secondaryTempFile = tmp.tmpNameSync({
-		prefix: NICKNAME,
-		postfix: `.${ext}`,
-	});
-	const convertArgs = convertArguments(ext);
 	if (isClip) {
-		const startTime = timestampToSeconds(clip_start);
-		const endTime = timestampToSeconds(clip_end);
-		const duration = secondsToTimestamp(endTime - startTime);
-		const ffmpegCommand = `-ss ${secondsToTimestamp(
-			startTime,
-		)} -i ${filePath} -to ${duration} ${convertArgs} ${secondaryTempFile}`;
-		filePath = secondaryTempFile;
-		const command = `ffmpeg ${ffmpegCommand}`;
-		const { exited, stdout } = Bun.spawn(command.split(" "));
-		const exitCode = await exited;
+		const ffmpegCommand = `-ss ${formatTimestamp(
+			clip_start,
+		)} -to ${formatTimestamp(clip_end)}`;
+		const { exitCode, stdout, file } = await convertFile(
+			filePath,
+			ext,
+			true,
+			ffmpegCommand,
+		);
 		if (exitCode !== 0) {
 			const stdoutstr = await new Response(stdout).text();
 			return await interaction.followUp(stdoutstr);
 		}
+		filePath = file;
 	} else if (needsConvert) {
 		const { exitCode, stdout, file } = await convertFile(filePath, ext, true);
 		if (exitCode !== 0) {
