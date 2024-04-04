@@ -42,8 +42,7 @@ const data = new SlashCommandBuilder()
 				option
 					.setName("as")
 					.setDescription("custom file format (gif, webm) default is MP4."),
-			)
-
+			),
 	);
 
 const execute = async (interaction: CommandInteraction) => {
@@ -66,8 +65,7 @@ const execute = async (interaction: CommandInteraction) => {
 		});
 		interactionReply.edit(
 			interactionReply.content +
-			`\r\n\r\nCopyable Link: <${interactionReply.attachments.first().url
-			}>`,
+				`\r\n\r\nCopyable Link: <${interactionReply.attachments.first().url}>`,
 		);
 	} catch (error) {
 		if (error.code === RESTJSONErrorCodes.RequestEntityTooLarge) {
@@ -81,9 +79,7 @@ const execute = async (interaction: CommandInteraction) => {
 			}
 		} else {
 			console.log(error);
-			interaction.followUp(
-				`Sorry babe, there was an error :( ${error.code}`,
-			);
+			interaction.followUp(`Sorry babe, there was an error :( ${error.code}`);
 		}
 	}
 	unlink(file).catch();

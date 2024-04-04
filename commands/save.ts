@@ -14,7 +14,6 @@ import { convertArguments, convertFile } from "../convertFile";
 
 const { NICKNAME } = process.env;
 
-
 const data = new SlashCommandBuilder()
 	.setName("save")
 	.setDescription("Saves video from URL")
@@ -58,7 +57,7 @@ const execute = async (interaction: CommandInteraction) => {
 	const needsConvert = filePathExt !== as;
 	const secondaryTempFile = tmp.tmpNameSync({
 		prefix: NICKNAME,
-		postfix: `.${ext}`
+		postfix: `.${ext}`,
 	});
 	const convertArgs = convertArguments(ext);
 	if (isClip) {
@@ -77,7 +76,7 @@ const execute = async (interaction: CommandInteraction) => {
 			return await interaction.followUp(stdoutstr);
 		}
 	} else if (needsConvert) {
-		const {exitCode, stdout, file} = await convertFile(filePath, ext, true);
+		const { exitCode, stdout, file } = await convertFile(filePath, ext, true);
 		if (exitCode !== 0) {
 			const stdoutstr = await new Response(stdout).text();
 			return await interaction.followUp(stdoutstr);
