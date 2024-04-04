@@ -1,6 +1,6 @@
 {
   "name": "maxine",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Helpful little discord bot",
   "type": "module",
   "exports": "./app.js",

@@ -10,10 +10,10 @@ import {
 import { unlink } from "node:fs/promises";
 import { timestampToSeconds } from "../timestampToSeconds";
 import { secondsToTimestamp } from "../secondsToTimestamp";
+import { convertArguments, convertFile } from "../convertFile";
 
 const { NICKNAME } = process.env;
 
-const GIF_ARGS = "-vf fps=24,scale=320:-1:flags=lanczos -c:v gif";
 
 const data = new SlashCommandBuilder()
 	.setName("save")
@@ -58,16 +58,17 @@ const execute = async (interaction: CommandInteraction) => {
 	const needsConvert = filePathExt !== as;
 	const secondaryTempFile = tmp.tmpNameSync({
 		prefix: NICKNAME,
+		postfix: `.${ext}`
 	});
-	const convertArgs = needsConvert && ext === "gif" ? GIF_ARGS : "-c:v copy -c:a copy";
+	const convertArgs = convertArguments(ext);
 	if (isClip) {
 		const startTime = timestampToSeconds(clip_start);
 		const endTime = timestampToSeconds(clip_end);
 		const duration = secondsToTimestamp(endTime - startTime);
 		const ffmpegCommand = `-ss ${secondsToTimestamp(
 			startTime,
-		)} -i ${filePath} -to ${duration} ${convertArgs} ${secondaryTempFile}.${ext}`;
-		filePath = `${secondaryTempFile}.${ext}`;
+		)} -i ${filePath} -to ${duration} ${convertArgs} ${secondaryTempFile}`;
+		filePath = secondaryTempFile;
 		const command = `ffmpeg ${ffmpegCommand}`;
 		const { exited, stdout } = Bun.spawn(command.split(" "));
 		const exitCode = await exited;
@@ -76,14 +77,12 @@ const execute = async (interaction: CommandInteraction) => {
 			return await interaction.followUp(stdoutstr);
 		}
 	} else if (needsConvert) {
-		filePath = `${secondaryTempFile}.${ext}`;
-		const command = `ffmpeg -i ${filePath} ${convertArgs} ${secondaryTempFile}.${ext}`;
-		const { exited, stdout } = Bun.spawn(command.split(" "));
-		const exitCode = await exited;
+		const {exitCode, stdout, file} = await convertFile(filePath, ext, true);
 		if (exitCode !== 0) {
 			const stdoutstr = await new Response(stdout).text();
 			return await interaction.followUp(stdoutstr);
 		}
+		filePath = file;
 	}
 	try {
 		const sentMessage = await interaction.followUp({
