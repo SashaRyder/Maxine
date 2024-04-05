@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
 	CommandInteraction,
 	SlashCommandBuilder,
@@ -22,10 +21,7 @@ const execute = async (interaction: CommandInteraction) => {
 	const avatar = user
 		.displayAvatarURL({ size: 2048 })
 		.replace(".webp?", ".png?"); //Ensures we don't replace gifs
-	const imgBuffer = await axios
-		.get(avatar, { responseType: "arraybuffer" })
-		.then((val) => Buffer.from(val.data, "base64"));
-	const color = await getColors(imgBuffer);
+	const color = await getColors(avatar);
 	const avatarEmbed = new EmbedBuilder()
 		.setColor(color[0].hex() as ColorResolvable)
 		.setTitle(`Avatar for ${user.username}`)
