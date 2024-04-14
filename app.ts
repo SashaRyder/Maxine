@@ -1,4 +1,4 @@
-import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
+import { Client, Collection, Events, Message, Partials, REST, Routes } from "discord.js";
 import path from "path";
 import { clientReady, guildCreate, guildLeave } from "./functions";
 import { submitPostsForChannel } from "./commands/reddit";
@@ -8,6 +8,8 @@ import _ from "underscore";
 import { Sequelize } from "sequelize";
 import { Reddit, Sequelize as SequelizeModel } from "./models";
 import { Glob } from "bun";
+import { reply } from "./commands/ask";
+import { GPTThread } from "./models/GPTThread";
 
 const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
@@ -35,7 +37,7 @@ for await (const file of commandFiles) {
 	}
 }
 
-client.on("ready", async () => {
+client.on(Events.ClientReady, async () => {
 	clientReady(client);
 	if (ENABLE_INSPECTOR === "true") {
 		startInspector(client);
@@ -63,6 +65,8 @@ client.on("ready", async () => {
 	const sequelize = new Sequelize(SequelizeModel.configuration);
 	const reddit = Reddit.init(Reddit.configuration, { sequelize });
 	await reddit.sync();
+	const gptthread = GPTThread.init(GPTThread.configuration, { sequelize });
+	await gptthread.sync();
 
 	if (cron.getTasks().size === 0) {
 		cron.schedule("*/30 * * * *", async () => {
@@ -82,9 +86,15 @@ client.on("ready", async () => {
 	}
 });
 
-client.on("guildCreate", (guild) => guildCreate(guild, client));
+client.on(Events.GuildCreate, (guild) => guildCreate(guild, client));
 
-client.on("guildDelete", (guild) => guildLeave(guild, client));
+client.on(Events.GuildDelete, (guild) => guildLeave(guild, client));
+
+client.on(Events.MessageCreate, async (message) => {
+	const botMentioned = Array.from(message.mentions.users.keys()).includes(client.user.id);
+	if(!botMentioned) return;
+	await reply(message);
+});
 
 client.on(Events.InteractionCreate, async (interaction): Promise<void> => {
 	if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand())
