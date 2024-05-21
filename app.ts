@@ -1,4 +1,4 @@
-import { Client, Collection, Events, Partials, REST, Routes } from "discord.js";
+import { Client, Collection, Events, GatewayIntentBits, REST, Routes } from "discord.js";
 import path from "path";
 import { clientReady, guildCreate, guildLeave } from "./functions";
 import { submitPostsForChannel } from "./commands/reddit";
@@ -11,7 +11,11 @@ import { Glob } from "bun";
 
 const { DISCORD_TOKEN, ENABLE_INSPECTOR } = process.env;
 
-const client = new Client({ partials: [Partials.Channel], intents: 32767 });
+const client = new Client({ intents: [
+	GatewayIntentBits.Guilds, 
+	GatewayIntentBits.GuildMessages, 
+	GatewayIntentBits.MessageContent
+ ] });
 
 const commands = [];
 
@@ -34,6 +38,17 @@ for await (const file of commandFiles) {
 		);
 	}
 }
+
+//Auto convert twitter messages to vxtwitter
+client.on("messageCreate", async (msg) => {
+	if(msg.author.bot) return;
+	const urls = msg.content.match(/\bhttps?:\/\/(x\.com|twitter\.com)\S*/gi);
+	if(urls.length > 0) {
+		await msg.suppressEmbeds(true);
+		const newUrls = urls.map((url) => "https://vxtwitter.com" + url.slice(url.indexOf(".com/") + 4));
+		await msg.channel.send(newUrls.join("; "));
+	}
+});
 
 client.on("ready", async () => {
 	clientReady(client);
